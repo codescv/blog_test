@@ -16,7 +16,7 @@ en:
 # Uncomment the lines below to configure your website in a second language.
 zh:
  languageCode: zh-Hans
- contentDir: content/zh
+ contentDir: content/cn
  params:
    description: Site description in Chinese...
  menu:
