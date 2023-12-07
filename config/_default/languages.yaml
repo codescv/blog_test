@@ -17,7 +17,6 @@ en:
 zh:
  languageCode: zh-Hans
  contentDir: content/zh
- title: Chinese website title...
  params:
    description: Site description in Chinese...
  menu:
