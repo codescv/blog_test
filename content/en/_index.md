@@ -14,5 +14,5 @@ sections:
     content:
       filters:
         folders:
-          - post
+          - en/post
 ---
