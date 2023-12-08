@@ -10,7 +10,6 @@ image:
   caption: 'Image credit: [**IndustryWired**](https://industrywired.com)'
 ---
 
-{{< toc >}}
 
 > Knowledge from **reading a paper** is shallow;  
 > to truly understand, you must **run the code** yourself.  
@@ -213,7 +212,7 @@ RMS normalization本文略去不讲.
 
 - x: (batch_size, seq_len, dim) 也就是Transformer里面的h, 输入的token embedding
 - start_pos: int 输入的是token开始的位置, 第一次调用时为0, 后续为当前输出位置.
-- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的"复数" {{<math>}}$e^{il}${{</math>}}. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
+- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的"复数" {{< math >}}$e^{il}${{< /math >}}. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
 - mask: causal attention mask. 在第一次调用时, mask是一个三角矩阵 (causal attention mask, shape t x t). 后续的调用中mask=None, 因为输入只有最后一个token, 它可以跟任意前面的k, v交互.
 
 **Output**
