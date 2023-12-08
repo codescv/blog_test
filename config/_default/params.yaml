@@ -61,3 +61,8 @@ features:
     url: 'https://github.com/<username>/<repository>'
     content_dir: content
     branch: main
+
+# Appearance
+appearance:
+  mode: system
+  color: teal

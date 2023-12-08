@@ -4,7 +4,7 @@
 # This file is formatted using YAML syntax - learn more at https://learnxinyminutes.com/docs/yaml/
 
 title: Chi's Blog # Website name
-baseURL: 'https://blog.codescv.com/blog_test' # Website URL
+baseURL: 'https://blog.codescv.com/blog_test/' # Website URL
 
 ############################
 ## PAGE OPTIONS
