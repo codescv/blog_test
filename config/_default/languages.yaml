@@ -15,7 +15,7 @@ en:
       - name: Projects
         url: projects/
         weight: 2
-      - name: Topics
+      - name: Tags
         url: tags/
         weight: 20
 
@@ -28,6 +28,12 @@ zh:
    description: Site description in Chinese...
  menu:
    main:
-     - name: 主页
-       url: /
-       weight: 1
+      - name: 主页
+        url: /
+        weight: 1
+      - name: 项目
+        url: projects/
+        weight: 2
+      - name: 文章
+        url: tags/
+        weight: 20
