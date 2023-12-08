@@ -10,11 +10,16 @@ image:
   caption: 'Image credit: [**IndustryWired**](https://industrywired.com)'
 ---
 
+{{< toc >}}
+
 > Knowledge from **reading a paper** is shallow;  
 > to truly understand, you must **run the code** yourself.  
-> 
+>
+> -- <cite>You Lu</cite>
+
 > 纸上得来终觉浅，绝知此事要躬行. 
-> —— 陆游
+> 
+> -- <cite>陆游</cite>
 
 # 为什么写这篇文章?
 
@@ -34,7 +39,8 @@ image:
 
 1. LLaMA是一个decoder-only transformer, 它没有encoder, 也没有cross attention. 注意在下面这张模型架构图里, 模型的输入叫做 "outputs shifted right", 因为decoder的input和output其实是同一个东西, 当前step的output是下一个step的input.
 ![Transformer](transformer.png)
-1. Pre-normalization. 上面这张图是原始的transformer, 它的normalization是加在output上的. 现代的transformer会把normalization加在input上. 用伪代码来表示:
+
+2. Pre-normalization. 上面这张图是原始的transformer, 它的normalization是加在output上的. 现代的transformer会把normalization加在input上. 用伪代码来表示:
 ```python
 # 原始transformer
 h = norm(x + attn(x))
@@ -44,9 +50,11 @@ out = norm(h + ffn(h))
 h = x + attn(norm(x))
 out = h + ffn(norm(x))
 ```
-2. Rotary Positional Embedding (RoPE). 目前主流都比较喜欢相对位置的positional embedding, 我猜想一方面目前context length越来越大, 如果采用绝对位置来计算, 有可能因为训练数据的长度分布不均导致PE在某些位置没有充分的训练; 另一方面如果考虑某一个短语它在句子中平移时它的意思不会改变, 相对位置的embedding感觉也更符合直觉一些.  
+
+3. Rotary Positional Embedding (RoPE). 目前主流都比较喜欢相对位置的positional embedding, 我猜想一方面目前context length越来越大, 如果采用绝对位置来计算, 有可能因为训练数据的长度分布不均导致PE在某些位置没有充分的训练; 另一方面如果考虑某一个短语它在句子中平移时它的意思不会改变, 相对位置的embedding感觉也更符合直觉一些.  
     **RoPE的直觉想法**: 假设有一个positional embedding函数 $f(x, l)$ 表示input $x$ 在位置l处的embedding, 我们希望 $f(q, m)$和 $f(k, n)$ 的点积只跟相对位置 $(m-n)$相关. 所以, 只要我们可以把embedding表示成复数$f(x, l) = xe^{il}$, 位置l是复数的转角, 就可以保证上面这点.
-3. activation function和normalization function和原始transformer不同. 这个我认为是小细节了, 不再展开.
+
+4. activation function和normalization function和原始transformer不同. 这个我认为是小细节了, 不再展开.
 
 # LLaMA代码解析
 [LLaMA](https://github.com/facebookresearch/llama)的代码非常直观, 主要分三个部份:
@@ -57,7 +65,6 @@ out = h + ffn(norm(x))
 下面分别分析一下Sampling和Model的部份.
 
 ## Sampling
-
 Decoding常见的方法有beam search和temperature sampling. Beam search结果可靠, 准确度较高, 常见于翻译类应用; temperature sampling的结果有随机性, 能产生更多样性的结果, 常见于chatbot类应用. LLaMA的开源代码中使用的是后者.
 
 Temperature sampling的过程如下:
@@ -107,12 +114,13 @@ for cur_pos in range(start_pos, total_len):
 ```
 
 可以看到, 实际上只有在输出第一个output token的时候, 模型的输入是`tokens[:t]`, 而后续的每个step, 模型只输入了最后一个token. 为什么是这样呢?
-![[transformer-decode.png]]
+![Transformer Decode][transformer-decode.png]
 如果我们对照上图考虑第t个step和第t+1个step的区别, 其实对于decoder的每一层, 前t个q, k, v以及output其实都没有变. 对于第t+1个step, 我们只关心最后一个位置的output, 因为之前的结果我们已经知道了. 而最后一个位置的output只跟 `attention(q[-1], k[:t], v[:t])` 有关. 所以对于`q[:t]` 部份的attention不需要重复计算, 只需cache住`k[:t]`和 `v[:t]`即可.
 
-1. Batch prediction和单个prediction有什么区别?
-如果对generate代码进一步研究, 会发现batch prediction并不一定会比单条更高效! 你能解释下面`torch.where`部份的代码是在干什么吗?
-```python
+2. Batch prediction和单个prediction有什么区别?
+
+如果对generate代码进一步研究, 会发现batch prediction并不一定会比单条更高效! 你能解释下面高亮部份的代码是在干什么吗?
+```python {linenos=table,hl_lines=["7-9"],linenostart=1}
 start_pos = min_prompt_size
 prev_pos = 0
 for cur_pos in range(start_pos, total_len):
@@ -142,6 +150,7 @@ for i, t in enumerate(tokens.tolist()):
 1. 在单条的prediction中, 碰到EOS就可以退出了. 但是在batch prediction中, 你无法预先知道会输出多长, 所以只能指定一个max length, 最后再根据EOS的位置进行cut off. 这必然造成计算量的浪费.
 2. 对于单条的prediction, 只要从prompt末尾开始就可以了. 但是对于batch, 要从最短的一个prompt的末尾开始, 并且要小心不要覆盖已有的prompt (上面代码中torch.where的作用).  
 	(所以， 也有人在实现的时候是从左边做padding，让输入按最右侧对齐)
+
 ## Transformer Model
 
 以7B的模型为例, 模型参数为
@@ -163,7 +172,7 @@ for i, t in enumerate(tokens.tolist()):
 (batch_size, vocab_size) 每个prompt的next token logits.
 
 Transformer的逻辑如下:
-```python
+```python {linenos=table,hl_lines=["17-18"],linenostart=1}
 # token to embedding
 # tokens (batch_size, seq_len) 
 # embedding (batch_size, seq_len, dim)
@@ -198,13 +207,13 @@ RMS normalization本文略去不讲.
 
 ### class [TransformerBlock](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L178)
 
-这个类包含了Decoder layer的实现 (上面代码中红色的部份).
+这个类包含了Decoder layer的实现 (上面代码中高亮的部份).
 
 **Input**
 
 - x: (batch_size, seq_len, dim) 也就是Transformer里面的h, 输入的token embedding
 - start_pos: int 输入的是token开始的位置, 第一次调用时为0, 后续为当前输出位置.
-- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的”复数“ e^il. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
+- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的"复数" {{<math>}}$e^{il}${{</math>}}. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
 - mask: causal attention mask. 在第一次调用时, mask是一个三角矩阵 (causal attention mask, shape t x t). 后续的调用中mask=None, 因为输入只有最后一个token, 它可以跟任意前面的k, v交互.
 
 **Output**
