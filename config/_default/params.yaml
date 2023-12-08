@@ -51,8 +51,8 @@ locale:
 # Site features
 features:
   syntax_highlighter:
-    theme_light: github-light
-    theme_dark: github-dark
+    theme_light: xcode-light
+    theme_dark: xcode-dark
   math:
     enable: false
   privacy_pack:
