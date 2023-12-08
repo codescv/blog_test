@@ -10,17 +10,24 @@ en:
   menu:
     main:
       - name: Home
-        url: '/'
+        url: /
         weight: 1
+      - name: Projects
+        url: projects/
+        weight: 2
+      - name: Topics
+        url: tags/
+        weight: 20
 
 # Uncomment the lines below to configure your website in a second language.
 zh:
  languageCode: zh-Hans
  contentDir: content/cn
+ title: "Chi的Blog"
  params:
    description: Site description in Chinese...
  menu:
    main:
      - name: 主页
-       url: '/'
+       url: /
        weight: 1
