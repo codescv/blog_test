@@ -5,9 +5,7 @@
 
 # Appearance
 appearance:
-  # mode: system
-  theme_day: minimal
-  theme_night: minimal
+  mode: system
   color: teal
 
 # SEO
@@ -32,10 +30,9 @@ marketing:
 header:
   navbar:
     enable: true
-    align: l
     show_search: true
     show_theme_chooser: true
-    show_day_night: true
+
 
 # Site footer
 footer:
