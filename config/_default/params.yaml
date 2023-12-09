@@ -32,6 +32,7 @@ marketing:
 header:
   navbar:
     enable: true
+    align: l
     show_search: true
     show_theme_chooser: true
     show_day_night: true
