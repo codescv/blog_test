@@ -5,8 +5,10 @@
 
 # Appearance
 appearance:
-  mode: system
-  color: blue
+  # mode: system
+  theme_day: minimal
+  theme_night: minimal
+  color: teal
 
 # SEO
 marketing:
@@ -32,6 +34,7 @@ header:
     enable: true
     show_search: true
     show_theme_chooser: true
+    show_day_night: true
 
 # Site footer
 footer:
@@ -62,7 +65,3 @@ features:
     content_dir: content
     branch: main
 
-# Appearance
-appearance:
-  mode: system
-  color: teal
