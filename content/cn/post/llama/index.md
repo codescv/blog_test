@@ -170,7 +170,7 @@ for i, t in enumerate(tokens.tolist()):
 (batch_size, vocab_size) 每个prompt的next token logits.
 
 Transformer的逻辑如下:
-```python {linenos=table,hl_lines=["17-18"],linenostart=1}
+```python {linenos=false,hl_lines=["17-18"],linenostart=1}
 # token to embedding
 # tokens (batch_size, seq_len) 
 # embedding (batch_size, seq_len, dim)
