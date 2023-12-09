@@ -119,7 +119,7 @@ for cur_pos in range(start_pos, total_len):
 2. Batch prediction和单个prediction有什么区别?
 
 如果对generate代码进一步研究, 会发现batch prediction并不一定会比单条更高效! 你能解释下面高亮部份的代码是在干什么吗?
-```python {linenos=table,hl_lines=["128-130"],linenostart=123}
+```python {linenos=table,hl_lines=["7-9"],linenostart=1}
 start_pos = min_prompt_size
 prev_pos = 0
 for cur_pos in range(start_pos, total_len):
@@ -170,7 +170,7 @@ for i, t in enumerate(tokens.tolist()):
 (batch_size, vocab_size) 每个prompt的next token logits.
 
 Transformer的逻辑如下:
-```python {hl_lines=["191-192"],linenostart=175}
+```python {linenos=table,hl_lines=["17-18"],linenostart=1}
 # token to embedding
 # tokens (batch_size, seq_len) 
 # embedding (batch_size, seq_len, dim)
