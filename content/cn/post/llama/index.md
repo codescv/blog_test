@@ -66,7 +66,7 @@ out = h + ffn(norm(x))
 ```
 
 3. Rotary Positional Embedding (RoPE). 目前主流都比较喜欢相对位置的positional embedding, 我猜想一方面目前context length越来越大, 如果采用绝对位置来计算, 有可能因为训练数据的长度分布不均导致PE在某些位置没有充分的训练; 另一方面如果考虑某一个短语它在句子中平移时它的意思不会改变, 相对位置的embedding感觉也更符合直觉一些.  
-    **RoPE的直觉想法**: 假设有一个positional embedding函数 {{< math >}} $f(x, l)$ {{< /math >}} 表示input {{< math >}} $x$ {{< /math >}} 在位置l处的embedding, 我们希望 {{< math >}} $f(q, m)$ {{< /math >}}和 {{< math >}} $f(k, n)$ {{< /math >}} 的点积只跟相对位置{{< math >}} $(m-n)$ {{< /math >}}相关. 所以, 只要我们可以把embedding表示成复数{{< math >}} $f(x, l) = xe^{il}$ {{< math >}}, 位置l是复数的转角, 就可以保证上面这点.
+    **RoPE的直觉想法**: 假设有一个positional embedding函数 {{< math >}} $f(x, l)$ {{< /math >}} 表示input {{< math >}} $x$ {{< /math >}} 在位置l处的embedding, 我们希望 {{< math >}} $f(q, m)$ {{< /math >}}和 {{< math >}} $f(k, n)$ {{< /math >}} 的点积只跟相对位置{{< math >}} $(m-n)$ {{< /math >}}相关. 所以, 只要我们可以把embedding表示成复数{{< math >}} $f(x, l) = xe^{il}$ {{< /math >}}, 位置l是复数的转角, 就可以保证上面这点.
 
 4. activation function和normalization function和原始transformer不同. 这个我认为是小细节了, 不再展开.
 
