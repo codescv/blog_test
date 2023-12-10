@@ -66,7 +66,7 @@ out = h + ffn(norm(x))
 ```
 
 3. Rotary Positional Embedding (RoPE). 目前主流都比较喜欢相对位置的positional embedding, 我猜想一方面目前context length越来越大, 如果采用绝对位置来计算, 有可能因为训练数据的长度分布不均导致PE在某些位置没有充分的训练; 另一方面如果考虑某一个短语它在句子中平移时它的意思不会改变, 相对位置的embedding感觉也更符合直觉一些.  
-    **RoPE的直觉想法**: 假设有一个positional embedding函数 $f(x, l)$ 表示input $x$ 在位置l处的embedding, 我们希望 $f(q, m)$和 $f(k, n)$ 的点积只跟相对位置 $(m-n)$相关. 所以, 只要我们可以把embedding表示成复数$f(x, l) = xe^{il}$, 位置l是复数的转角, 就可以保证上面这点.
+    **RoPE的直觉想法**: 假设有一个positional embedding函数 {{< math >}} $f(x, l)$ {{< /math >}} 表示input {{< math >}} $x$ {{< /math >}} 在位置l处的embedding, 我们希望 {{< math >}} $f(q, m)$ {{< /math >}}和 {{< math >}} $f(k, n)$ {{< /math >}} 的点积只跟相对位置{{< math >}} $(m-n)$ {{< /math >}}相关. 所以, 只要我们可以把embedding表示成复数{{< math >}} $f(x, l) = xe^{il}$ {{< math >}}, 位置l是复数的转角, 就可以保证上面这点.
 
 4. activation function和normalization function和原始transformer不同. 这个我认为是小细节了, 不再展开.
 
@@ -128,7 +128,7 @@ for cur_pos in range(start_pos, total_len):
 ```
 
 可以看到, 实际上只有在输出第一个output token的时候, 模型的输入是`tokens[:t]`, 而后续的每个step, 模型只输入了最后一个token. 为什么是这样呢?
-![Transformer Decode][transformer-decode.png]
+![Transformer Decode](transformer-decode.png)
 如果我们对照上图考虑第t个step和第t+1个step的区别, 其实对于decoder的每一层, 前t个q, k, v以及output其实都没有变. 对于第t+1个step, 我们只关心最后一个位置的output, 因为之前的结果我们已经知道了. 而最后一个位置的output只跟 `attention(q[-1], k[:t], v[:t])` 有关. 所以对于`q[:t]` 部份的attention不需要重复计算, 只需cache住`k[:t]`和 `v[:t]`即可.
 
 2. Batch prediction和单个prediction有什么区别?
@@ -303,7 +303,7 @@ return self.wo(output)
 - single head中的矩阵乘法是 (seq_len, dim) * (dim, seq_len), 复杂度为 O(seq_len^2 * dim)
 - 对于multi head, 它的矩阵乘法为n_head个独立的(seq_len, head_dim) * (head_dim, seq_len)
 
-复杂度为 `O(n_head * seq_len^2 * head_dim) = O(seq_len^2 * dim)`
+复杂度为  {{< math >}} $O(n\_head * seq\_len^2 * head\_dim) = O(seq\_len^2 * dim)$ {{< /math >}}
 
 所以, 本质上multi head相当于把embedding拆成n份, 然后每一份单独做attention, 总体计算复杂度和single head attention是一样的.
 
@@ -416,8 +416,14 @@ class LLaMA:
 4. 还有个比较subtle的问题, Positive和Negative会被SentencePiece切成\[Pos, itive\] 和 \[Neg, ative\]
 
 所以
-$score(prompt, Positive) = score(Pos | prompt) \cdot score(itive | prompt, Pos)$
-$score(prompt, Negative) = score(Neg | prompt) \cdot score(ative | prompt, Neg)$
+{{< math >}}
+$$
+score(prompt, Positive) = score(Pos | prompt) \cdot score(itive | prompt, Pos)
+$$
+$$
+score(prompt, Negative) = score(Neg | prompt) \cdot score(ative | prompt, Neg)
+$$
+{{< /math >}}
 
 假如我们心中的正确答案是Positive, 那么模型输出 score(Pos | p) > score(Neg | p) 是没问题的, 但是在第二步, 因为假设模型已经输出了Neg, 那么很大可能 score(ative | p, Neg) > score(itive | p, Neg). 所以这一步的score其实没有太大意义了.
 
@@ -429,10 +435,10 @@ $score(prompt, Negative) = score(Neg | prompt) \cdot score(ative | prompt, Neg)$
 
 以这个句子为例
 
-`The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.`
+```The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.```
 
-Question: What is the sentiment of the comment above, positive or negative?  
-Right Answer:
+> Question: What is the sentiment of the comment above, positive or negative?  
+> Right Answer:
 
 模型在读到末尾时, 输出的max attention和average attention分别为
 ![max_attention](max_attention.png)
