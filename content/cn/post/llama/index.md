@@ -9,8 +9,6 @@ tags:
 image:
   caption: 'Image credit: [**IndustryWired**](https://industrywired.com)'
 ---
-
-
 > Knowledge from **reading a paper** is shallow;  
 > to truly understand, you must **run the code** yourself.  
 >
@@ -28,7 +26,7 @@ image:
 2. 读blog, 看教学视频等: 例如 [The Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/). Blog比paper易懂, 但是二手信息, 来源也不可靠, 信息准确度难以保证.
 3. 看sample code: 比较有名的是 [Transformer from scratch](https://peterbloem.nl/blog/transformers). 动手实现transformer, 对理解非常有帮助, 缺点是这是一个用来教学的code base, 和实际公司在用的代码有不少区别, 没法直接用这个代码来做项目.
 
-有没有一个办法, 既能准确理解Transformer的原理, 又能把它用到工作里呢? 我想到的办法就是读懂一个真正在生产中应用的, 效果达到世界先进水平的Transformer代码. 这里我选择了Meta开源的LLaMA.
+有没有一个办法, 既能准确理解Transformer的原理, 又能把它用到工作里呢? 我想到的办法就是读懂一个真正在生产中应用的, 效果达到世界先进水平的Transformer代码. 这里我选择了Meta开源的[LLaMA](https://github.com/facebookresearch/llama).
 
 # Prerequisites
 
@@ -36,10 +34,27 @@ image:
 
 # LLaMA和原始Transformer的不同
 
-1. LLaMA是一个decoder-only transformer, 它没有encoder, 也没有cross attention. 注意在下面这张模型架构图里, 模型的输入叫做 "outputs shifted right", 因为decoder的input和output其实是同一个东西, 当前step的output是下一个step的input.
+1. LLaMA是一个decoder-only transformer, 它没有encoder, 也没有cross attention. 注意在下面这张模型架构图里, 模型的输入叫做 "outputs(shifted right)", 因为decoder的input和output其实是同一个东西, 当前step的output是下一个step的input.
 ![Transformer](transformer.png)
 
-2. Pre-normalization. 上面这张图是原始的transformer, 它的normalization是加在output上的. 现代的transformer会把normalization加在input上. 用伪代码来表示:
+2. Pre-normalization. 上面这张图是原始的transformer, 它的normalization是加在output上的. 现代的transformer会把normalization加在input上.  下图展示了两者的不同:
+
+```mermaid
+graph TD
+input[input] --> |original|attn1[attn]
+attn1 --> add1[add] --> norm1[norm]
+norm1 --> ffn1[FFN]
+ffn1 --> add2[add] --> norm2[norm]
+norm2 --> output1[output]
+
+input[input] --> |pre-normalization|norm3[norm]
+norm3 --> attn2[attn]
+attn2 --> add3[add] --> norm4[norm]
+norm4 --> ffn2[FFN]
+ffn2 --> add4[add] --> output2[output]
+```
+
+用伪代码来表示:
 ```python
 # 原始transformer
 h = norm(x + attn(x))
@@ -102,9 +117,9 @@ def generate(prompt, temperature):
 1. 在伪代码里, 对每一个step, 模型的输入是 `tokens[:t]`, 输出是`tokens[t+1]`(的logits), 这个在理论上是正确的, 但实际上是这样吗?
 
 LLaMA官方的代码实现是[这样](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/generation.py#L39)的:
-
 ```python
-start_pos = min_prompt_sizeprev_pos = 0
+start_pos = min_prompt_size
+prev_pos = 0
 for cur_pos in range(start_pos, total_len):    
 	logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
 	# ...    
@@ -204,14 +219,13 @@ return output.float()
 RMS normalization本文略去不讲.
 
 ### class [TransformerBlock](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L178)
-
 这个类包含了Decoder layer的实现 (上面代码中高亮的部份).
 
 **Input**
 
 - x: (batch_size, seq_len, dim) 也就是Transformer里面的h, 输入的token embedding
 - start_pos: int 输入的是token开始的位置, 第一次调用时为0, 后续为当前输出位置.
-- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的"复数" {{< math >}}$e^{il}${{< /math >}}. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
+- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的"复数" $e^{il}$. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
 - mask: causal attention mask. 在第一次调用时, mask是一个三角矩阵 (causal attention mask, shape t x t). 后续的调用中mask=None, 因为输入只有最后一个token, 它可以跟任意前面的k, v交互.
 
 **Output**
@@ -289,11 +303,9 @@ return self.wo(output)
 - single head中的矩阵乘法是 (seq_len, dim) * (dim, seq_len), 复杂度为 O(seq_len^2 * dim)
 - 对于multi head, 它的矩阵乘法为n_head个独立的(seq_len, head_dim) * (head_dim, seq_len)
 
-复杂度为$O({n\_head} * {seq\_len}^2 * {head\_dim}) = O({seq\_len}^2 * dim)$
+复杂度为 `O(n_head * seq_len^2 * head_dim) = O(seq_len^2 * dim)`
 
 所以, 本质上multi head相当于把embedding拆成n份, 然后每一份单独做attention, 总体计算复杂度和single head attention是一样的.
-
-  
 
 # 实验
 
@@ -340,6 +352,7 @@ The sentiment of the comment above is
 
 ```
 `The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.`
+
 Question: What is the sentiment of the comment above, positive or negative?  
 Right Answer:
 ```
@@ -422,10 +435,10 @@ Question: What is the sentiment of the comment above, positive or negative?
 Right Answer:
 
 模型在读到末尾时, 输出的max attention和average attention分别为
-![[max_attention.png]]
+![max_attention](max_attention.png)
 max attention
 
-![[avg-attention.png]]
+![avg-attention](avg-attention.png)
 average attention
 
 好像乍一看没法看出什么, 但是如果把”sentiment”这个词和其他词的attention单独打印, 发现如下的score:
