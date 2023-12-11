@@ -66,7 +66,7 @@ out = h + ffn(norm(x))
 ```
 
 3. Rotary Positional Embedding (RoPE). 目前主流都比较喜欢相对位置的positional embedding, 我猜想一方面目前context length越来越大, 如果采用绝对位置来计算, 有可能因为训练数据的长度分布不均导致PE在某些位置没有充分的训练; 另一方面如果考虑某一个短语它在句子中平移时它的意思不会改变, 相对位置的embedding感觉也更符合直觉一些.  
-    **RoPE的直觉想法**: 假设有一个positional embedding函数 $f(x, l)$ 表示input $x$ 在位置l处的embedding, 我们希望  $f(q, m)$ 和  $f(k, n)$ 的点积只跟相对位置 $(m-n)$ 相关. 所以, 只要我们可以把embedding表示成复数$f(x, l) = xe^{il}$ , 位置l是复数的转角, 就可以保证上面这点.
+    **RoPE的直觉想法**: 假设有一个positional embedding函数  $f(x, l)$  表示input  $x$  在位置l处的embedding, 我们希望  $f(q, m)$ 和  $f(k, n)$  的点积只跟相对位置 $(m-n)$ 相关. 所以, 只要我们可以把embedding表示成复数 $f(x, l) = xe^{il}$ , 位置l是复数的转角, 就可以保证上面这点.
 
 4. activation function和normalization function和原始transformer不同. 这个我认为是小细节了, 不再展开.
 
@@ -134,7 +134,7 @@ for cur_pos in range(start_pos, total_len):
 2. Batch prediction和单个prediction有什么区别?
 
 如果对generate代码进一步研究, 会发现batch prediction并不一定会比单条更高效! 你能解释下面高亮部份的代码是在干什么吗?
-```python {linenos=false,hl_lines=["7-9"],linenostart=1}
+```python hl:6-8 {linenos=false,hl_lines=["6-8"],linenostart=1}
 start_pos = min_prompt_size
 prev_pos = 0
 for cur_pos in range(start_pos, total_len):
@@ -185,7 +185,7 @@ for i, t in enumerate(tokens.tolist()):
 (batch_size, vocab_size) 每个prompt的next token logits.
 
 Transformer的逻辑如下:
-```python {linenos=false,hl_lines=["17-18"],linenostart=1}
+```python hl:17-18 {linenos=false,hl_lines=["17-18"],linenostart=1}
 # token to embedding
 # tokens (batch_size, seq_len) 
 # embedding (batch_size, seq_len, dim)
@@ -303,7 +303,7 @@ return self.wo(output)
 - single head中的矩阵乘法是 (seq_len, dim) * (dim, seq_len), 复杂度为 O(seq_len^2 * dim)
 - 对于multi head, 它的矩阵乘法为n_head个独立的(seq_len, head_dim) * (head_dim, seq_len)
 
-复杂度为   $O(n\_head * seq\_len^2 * head\_dim) = O(seq\_len^2 * dim)$ 
+复杂度为 O(n_head * seq_len^2 * head_dim) = O(seq_len^2 * dim)
 
 所以, 本质上multi head相当于把embedding拆成n份, 然后每一份单独做attention, 总体计算复杂度和single head attention是一样的.
 
@@ -423,7 +423,6 @@ $$
 $$
 score(prompt, Negative) = score(Neg | prompt) \cdot score(ative | prompt, Neg)
 $$
-
 
 假如我们心中的正确答案是Positive, 那么模型输出 score(Pos | p) > score(Neg | p) 是没问题的, 但是在第二步, 因为假设模型已经输出了Neg, 那么很大可能 score(ative | p, Neg) > score(itive | p, Neg). 所以这一步的score其实没有太大意义了.
 
