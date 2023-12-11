@@ -62,4 +62,15 @@ features:
     url: 'https://github.com/<username>/<repository>'
     content_dir: content
     branch: main
+  comment:
+    # Choose a provider: giscus, disqus, commento, or '' to disable commenting
+    provider: 'giscus'
+    giscus:
+      repo: 'codescv/codescv.github.io'
+      repo_id: 'R_kgDOK2Vn_A'
+      category: 'General'
+      category_id: 'DIC_kwDOK2Vn_M4Cbp8J'
+      theme: preferred_color_scheme
+      language_code: en
+      mapping: pathname
 
