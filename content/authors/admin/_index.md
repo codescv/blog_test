@@ -1,6 +1,6 @@
 ---
 # Display name
-title: 张弛
+title: Chi Zhang
 
 # Name pronunciation (optional)
 # name_pronunciation: Chee Jang
@@ -25,7 +25,7 @@ organizations:
     url: https://www.google.com
 
 # Short bio (displayed in user profile at end of posts)
-bio: Tech Lead @Google
+bio: Engineer in Ads & NLP @ Google
 
 # Social Networking
 # Need to use another icon? Simply download the SVG icon to your `assets/media/icons/` folder.
@@ -39,6 +39,8 @@ profiles:
     url: https://www.instagram.com/codescv
   - icon: brands/linkedin
     url: https://www.linkedin.com/in/chizhangzju
+  - icon: brands/youtube
+    url: https://www.youtube.com/@codescv
   # Link to a PDF of your resume/CV - upload it to `static/uploads/resume.pdf`
   - icon: academicons/cv
     url: uploads/resume.pdf
@@ -51,5 +53,6 @@ profiles:
 highlight_name: true
 ---
 
-Google工程师，互联网从业10余年。
-爱好音乐，自学吉他，偶尔作曲编曲。
+Chi is now currently working at Google, before which he has worked for Xiaomi, Amazon and PDD as a software engineer. 
+He works a lot in machine learning, especially in Ads and NLP.
+Outside of work he enjoys music. You can find some of his guitar covers in his [YouTube](https://www.youtube.com/@codescv) channel.

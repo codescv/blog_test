@@ -6,34 +6,7 @@
 en:
   languageCode: en-us
   # Uncomment for multi-lingual sites, and move English content into `en` sub-folder.
-  contentDir: content/en
-  menu:
-    main:
-      - name: Home
-        url: /
-        weight: 1
-      - name: Projects
-        url: projects/
-        weight: 2
-      - name: Tags
-        url: tags/
-        weight: 20
 
 # Uncomment the lines below to configure your website in a second language.
 zh:
  languageCode: zh-Hans
- contentDir: content/cn
- title: "Chi的Blog"
- params:
-   description: Site description in Chinese...
- menu:
-   main:
-      - name: 主页
-        url: /
-        weight: 1
-      - name: 项目
-        url: projects/
-        weight: 2
-      - name: 文章
-        url: tags/
-        weight: 20
