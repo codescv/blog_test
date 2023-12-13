@@ -3,7 +3,7 @@
 title: 张弛
 
 # Name pronunciation (optional)
-# name_pronunciation: Chee Jang
+name_pronunciation: Chi Zhang
 
 # Full name (for SEO)
 first_name: Chi
@@ -11,7 +11,7 @@ last_name: Zhang
 
 # Status emoji
 status:
-  icon: ☕️
+  icon: 🎸
 
 # Is this the primary user of the site?
 superuser: true
@@ -51,5 +51,6 @@ profiles:
 highlight_name: true
 ---
 
-Google工程师，互联网从业10余年。
+现Google工程师/Tech Lead，前小米、亚马逊、PDD工程师. 
+互联网从业10余年, 主要做Ads和machine learning.
 爱好音乐，自学吉他，偶尔作曲编曲。

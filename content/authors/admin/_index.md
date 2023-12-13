@@ -11,7 +11,7 @@ last_name: Zhang
 
 # Status emoji
 status:
-  icon: ☕️
+  icon: 🎸
 
 # Is this the primary user of the site?
 superuser: true
@@ -53,6 +53,7 @@ profiles:
 highlight_name: true
 ---
 
-Chi is now currently working at Google, before which he has worked for Xiaomi, Amazon and PDD as a software engineer. 
-He works a lot in machine learning, especially in Ads and NLP.
+Chi is an Engineer and Tech Lead at Google, before which he has worked for Xiaomi, Amazon and PDD(aka Temu).
+He has worked in Ads and machine learning (especially NLP) for more than 10 years.
+
 Outside of work he enjoys music. You can find some of his guitar covers in his [YouTube](https://www.youtube.com/@codescv) channel.
