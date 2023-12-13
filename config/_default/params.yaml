@@ -14,7 +14,7 @@ marketing:
     site_type: Person
     local_business_type: ''
     org_name: ''
-    description: 'Chi's personal website.'
+    description: "Chi's personal website."
     twitter: 'codescv'
   analytics:
     google_analytics: ''
