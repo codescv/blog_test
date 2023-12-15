@@ -1,43 +1,41 @@
 ---
-title: LLaMA代码分析
-summary: 通过对官方LLaMA代码分析, 学习现代Transformer的工作原理
-date: 2023-10-23
+title: LLaMA Code Analysis
+summary: Learn how modern transformers work by analyzing the official implementation of LLaMA
+date: 2023-12-14
 tags:
   - NLP
-  - Deep Learning
+  - Deep
+  - Learning
   - Transformer
 image:
-  caption: 'Image credit: [**IndustryWired**](https://industrywired.com)'
+  caption: "Image credit: [**IndustryWired**](https://industrywired.com)"
 ---
 > Knowledge from **reading a paper** is shallow;  
-> to truly understand, you must **run the code** yourself.  
+> to truly understand, you must **run it** yourself.  
 >
 > -- <cite>You Lu</cite>
 
-> 纸上得来终觉浅，绝知此事要躬行. 
-> 
-> -- <cite>陆游</cite>
 
-# 为什么写这篇文章?
+# Why Do I Write This Article?  
+  
+Transformers are the foundation of modern language models. As of 2023, there are many ways to learn about transformers, to name just a few:
 
-回顾我学习Transformer的过程, 我用过以下几种方法:
+1. **Read papers:** I have read the original [Transformer paper](https://arxiv.org/abs/1706.03762) and some other papers, such as BERT, T5 and GPT. This method has several drawbacks. Firstly, it is inefficient. Papers often use difficult language to explain simple problems, and include a lot of irrelevant content. Secondly, papers tend to omit many crucial details, which could lead to inaccurate understanding.  
+2. **Read blogs and watch video tutorials:** For example, [The Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/). Blog posts are easier to understand than papers, but they are second-hand information from unreliable sources, and the accuracy of the information cannot be guaranteed.  
+3. **Study sample codes:** A relatively well-known example is [Transformer from scratch](https://peterbloem.nl/blog/transformers). Implementing the Transformer from scratch is very powerful way of understanding the model. However, this codebase is designed for educational purposes, which has many differences from the code used by companies in real applications. Therefore, it is not ready to use for production.  
 
-1. 读paper: 我读过原始的[Transformer paper](https://arxiv.org/abs/1706.03762)和一些其他的paper(例如BERT, T5, GPT等). 这种方法的缺点一是效率比较低, paper里经常使用比较难懂的语言来解释很简单的问题, 并且有大段我并不关心的内容. 二是paper会忽略掉大量的细节, 从而产生并不准确的理解.
-2. 读blog, 看教学视频等: 例如 [The Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/). Blog比paper易懂, 但是二手信息, 来源也不可靠, 信息准确度难以保证.
-3. 看sample code: 比较有名的是 [Transformer from scratch](https://peterbloem.nl/blog/transformers). 动手实现transformer, 对理解非常有帮助, 缺点是这是一个用来教学的code base, 和实际公司在用的代码有不少区别, 没法直接用这个代码来做项目.
-
-有没有一个办法, 既能准确理解Transformer的原理, 又能把它用到工作里呢? 我想到的办法就是读懂一个真正在生产中应用的, 效果达到世界先进水平的Transformer代码. 这里我选择了Meta开源的[LLaMA](https://github.com/facebookresearch/llama).
+## Why LLaMA?
+Is there a way in which one can both accurately understand the principles of Transformer and apply it to real work? I came up with a solution: to understand a Transformer code that is actually used in production and has achieved world-class results. Here, I chose [LLaMA](https://github.com/facebookresearch/llama) open-sourced by Meta, since it's open source and widely adopted by many derived models such as ChatGLM, Alpaca, Vicuna, etc.
 
 # Prerequisites
 
-本文假设读者已经理解原始的Transformer了. 如果没有, 可以先去看[Attention is all you need](https://arxiv.org/abs/1706.03762).
+This blog post assumes the reader has basic understanding of the original Transformer. If not, one may refer to [Attention is all you need](https://arxiv.org/abs/1706.03762) first.
 
-# LLaMA和原始Transformer的不同
-
-1. LLaMA是一个decoder-only transformer, 它没有encoder, 也没有cross attention. 注意在下面这张模型架构图里, 模型的输入叫做 "outputs(shifted right)", 因为decoder的input和output其实是同一个东西, 当前step的output是下一个step的input.
+# How LLaMA is different from the original Transformer    
+1. LLaMA is a **decoder-only** transformer (similar to GPT), meaning it has no encoder, and thus no cross-attention. Note that in the diagram of the model architecture below, the input to the model is called "outputs (shifted right)", because the input and output of the decoder are effectively the same thing, with the output of the **current step** being the input of the **next step**.
 ![Transformer](transformer.png)
 
-2. Pre-normalization. 上面这张图是原始的transformer, 它的normalization是加在output上的. 现代的transformer会把normalization加在input上.  下图展示了两者的不同:
+2. **Pre-Normalization**. The figure above demonstrates the original transformer, where normalization is applied to the output. Modern Transformers apply normalization to the input. The diagram below shows the difference between the two:
 
 ```mermaid
 graph TD
@@ -54,9 +52,9 @@ norm4 --> ffn2[FFN]
 ffn2 --> add4[add] --> output2[output]
 ```
 
-用伪代码来表示:
+With pseudo code:
 ```python
-# 原始transformer
+# original transformer (post-normalization)
 h = norm(x + attn(x))
 out = norm(h + ffn(h))
 
@@ -65,36 +63,34 @@ h = x + attn(norm(x))
 out = h + ffn(norm(x))
 ```
 
-3. Rotary Positional Embedding (RoPE). 目前主流都比较喜欢相对位置的positional embedding, 我猜想一方面目前context length越来越大, 如果采用绝对位置来计算, 有可能因为训练数据的长度分布不均导致PE在某些位置没有充分的训练; 另一方面如果考虑某一个短语它在句子中平移时它的意思不会改变, 相对位置的embedding感觉也更符合直觉一些.  
-    **RoPE的直觉想法**: 假设有一个positional embedding函数  $f(x, l)$  表示input  $x$  在位置l处的embedding, 我们希望  $f(q, m)$ 和  $f(k, n)$  的点积只跟相对位置 $(m-n)$ 相关. 所以, 只要我们可以把embedding表示成复数 $f(x, l) = xe^{il}$ , 位置l是复数的转角, 就可以保证上面这点.
+3. Rotary Positional Embedding (RoPE). Currently, relative positional embeddings are quite popular. I presume this is partly because the context length is getting longer and longer. If absolute positions are used, the uneven distribution of training data lengths may lead to insufficient training of PE at certain positions. On the other hand, considering that the meaning of a phrase would not change when it is shifted in a sentence, relative positional embeddings seem to be more intuitive.  
+**The intuition behind RoPE**: Suppose there is a positional embedding function $f(x, l)$ that represents the embedding of input $x$ at position $l$. We want the dot product of $f(q, m)$ and $f(k, n)$ to depend only on the relative position $(m-n)$. Therefore, as long as we can express the embedding as a complex number $f(x, l) = xe^{il}$, where position $l$ is the angle of the complex number, we can ensure the above point.
+4. Activation function and normalization function are different from the original Transformer: a minor detail that won't be discussed in this post.
 
-4. activation function和normalization function和原始transformer不同. 这个我认为是小细节了, 不再展开.
+# An Analysis of the LLaMA Code  
+The [LLaMA](https://github.com/facebookresearch/llama) codebase is straightforward and can be broadly divided into three sections:  
+- [generation.py](https://github.com/facebookresearch/llama/blob/main/llama/generation.py) - this contains the implementation of sampling  
+- [model.py](https://github.com/facebookresearch/llama/blob/main/llama/model.py) - this contains the implementation of the transformer model
+- [tokenizer.py](https://github.com/facebookresearch/llama/blob/main/llama/tokenizer.py) - this contains the implementation of the tokenizer. The tokenizer is a fairly standard SentencePiece tokenizer (vocab_size=32000). Since there are a lot of information about it on the internet, we will not explain it further for the purposes of this document.  
 
-# LLaMA代码解析
-[LLaMA](https://github.com/facebookresearch/llama)的代码非常直观, 主要分三个部份:
-- [generation.py](https://github.com/facebookresearch/llama/blob/main/llama/generation.py) 这里包含了sampling的实现
-- [model.py](https://github.com/facebookresearch/llama/blob/main/llama/model.py) 这里包含了Transformer的实现
-- [tokenizer.py](https://github.com/facebookresearch/llama/blob/main/llama/tokenizer.py) 这里包含了tokenizer的实现. Tokenizer比较简单, 就是使用了最常见的SentencePiece(vocab_size=32000). 本文就不再分析了.
-
-下面分别分析一下Sampling和Model的部份.
+Let's analyze the sampling and model sections in turn:
 
 ## Sampling
-Decoding常见的方法有beam search和temperature sampling. Beam search结果可靠, 准确度较高, 常见于翻译类应用; temperature sampling的结果有随机性, 能产生更多样性的结果, 常见于chatbot类应用. LLaMA的开源代码中使用的是后者.
+Common decoding approaches include beam search and temperature sampling. Beam search tends to produce reliable and accurate results, widely used in translation applications; temperature sampling, on the other hand, introduces randomness, leading to a broader range of possible outcomes, commonly seen in chatbot applications. LLaMA's open-source code utilizes the latter approach.  
 
-Temperature sampling的过程如下:
+The temperature sampling procedure is as follows:  
+  
+1. Convert the prompt into a list of integers (tokens) using the SentencePiece tokenizer.  
+2. Feed the tokens into the transformer model, which outputs a sequence of logits of length equal to the vocabulary size.  
+3. Divide the logits by the temperature and apply the softmax function to obtain a probability distribution. This implies that:  
+	- A temperature of 1 indicates direct sampling from the model's output distribution.  
+	- A temperature of 0 corresponds to selecting the token with the highest probability (also known as greedy sampling, which often yields suboptimal results).  
+	- A temperature between 0 and 1 implies sampling from the model's output distribution while favoring (with bias towards) tokens with higher probabilities.  
+	- A temperature above 1 (uncommon) "flattens" the model's output probabilities (reducing high values and increasing low values) before sampling; as the temperature approaches infinity, sampling becomes uniform.  
+4. Sample the next token from the distribution and append it to the end of the input token sequence.  
+5. Repeat steps 2-4 until the maximum sequence length is reached or an end-of-sequence (EOS) token is generated.  
 
-1. 用SentencePiece tokenizer把prompt变成tokens (int list)
-2. 模型(transformer) 输入tokens, 输出一个 vocab_size大小的logits.
-3. 把logits除以temperature, 然后做softmax, 得到一个概率分布. 所以:
-    - temperature = 1 代表直接按照模型输出的分布来sample
-    - temperature = 0 代表直接取概率最大的token (aka greedy, 往往效果比较差)
-    - temperature = 0~1 代表按照按照模型输出的分布来sample, 但是更加偏向概率大的
-    - temperature > 1 (不常见) 代表把模型输出概率”压扁”(大的变小, 小的变大) 然后再sample , 当temperature无穷大时就是uniform sample
-4. 在该分布下进行sample, 得到next token, 并把next token放到输入tokens的末尾.
-5. 重复步骤2-4直到长度超限, 或者输出了EOS token.
-
-用伪代码表示如下:
-
+To express this in pseudocode:
 ```python
 def generate(prompt, temperature):
 	tokens = tokenizer.encode(prompt)
@@ -103,20 +99,19 @@ def generate(prompt, temperature):
 		logits /= temperature
 		logits = topk(logits)
 		next_token = sample(softmax(logits))
-    if next_token = eos:
-      break
-		tokens.append(next_token)
-  
-  return tokenizer.decode(tokens)
+	    if next_token = eos:
+		    break
+	tokens.append(next_token)
+	return tokenizer.decode(tokens)
 ```
 
-因为sampling的过程是step by step的, 如果结果较长, 可以异步返回, 结合HTTP长连接的技术就可以实现像ChatGPT那样一个字一个字往外蹦的效果.
+Since the sampling process is step by step, if the result is long, it can be returned asynchronously. Combined with the technology of HTTP long connection, the effect of outputting one word at a time like ChatGPT can be achieved.  
 
-就sampling而言, 其实LLaMA和原始的Transformer, 或者说和任何其他语言模型都没有区别. 不过我还是发现了一些以前从没考虑过的问题, 例如:
-
-1. 在伪代码里, 对每一个step, 模型的输入是 `tokens[:t]`, 输出是`tokens[t+1]`(的logits), 这个在理论上是正确的, 但实际上是这样吗?
-
-LLaMA官方的代码实现是[这样](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/generation.py#L39)的:
+In terms of sampling, there is actually no difference between LLaMA and the original Transformer, or any other language model. However, I still found some issues that I had never thought about before, such as:  
+  
+1. In the pseudo code, for each step, the input of the model is `tokens[:t]`, and the output is `tokens[t+1]` (logits). This is theoretically correct, but is it true in practice?  
+  
+The official code implementation of LLaMA is [here](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/generation.py#L39):
 ```python
 start_pos = min_prompt_size
 prev_pos = 0
@@ -127,13 +122,14 @@ for cur_pos in range(start_pos, total_len):
 	prev_pos = cur_pos
 ```
 
-可以看到, 实际上只有在输出第一个output token的时候, 模型的输入是`tokens[:t]`, 而后续的每个step, 模型只输入了最后一个token. 为什么是这样呢?
+As we can see, only when the first output token is generated, the model's input is `tokens[:t]`, while in each subsequent step, the model only takes the last token as input. Why is this the case?
 ![Transformer Decode](transformer-decode.png)
-如果我们对照上图考虑第t个step和第t+1个step的区别, 其实对于decoder的每一层, 前t个q, k, v以及output其实都没有变. 对于第t+1个step, 我们只关心最后一个位置的output, 因为之前的结果我们已经知道了. 而最后一个位置的output只跟 `attention(q[-1], k[:t], v[:t])` 有关. 所以对于`q[:t]` 部份的attention不需要重复计算, 只需cache住`k[:t]`和 `v[:t]`即可.
+If we consider the difference between step t and step t+1 with reference to the figure above, we can see that for each layer of the decoder, the first t steps of (q, k, v) and output actually remain unchanged. For step t+1, we are only concerned with the output of the last position, since we already know the previous results. And the output of the last position is only related to `attention(q[-1], k[:t], v[:t])`. Therefore, the attention part of `q[:t]` does not need to be recalculated, we only need to cache `k[:t]` and `v[:t]`.
 
-2. Batch prediction和单个prediction有什么区别?
+2. What's the difference between batch prediction and single prediction?  
+  
+If you further study the generate code, you will find that batch prediction is not necessarily more efficient than single prediction! Can you explain what the highlighted code below is doing?
 
-如果对generate代码进一步研究, 会发现batch prediction并不一定会比单条更高效! 你能解释下面高亮部份的代码是在干什么吗?
 ```python hl:6-8 {linenos=false,hl_lines=["6-8"],linenostart=1}
 start_pos = min_prompt_size
 prev_pos = 0
@@ -158,33 +154,32 @@ for i, t in enumerate(tokens.tolist()):
     decoded.append(self.tokenizer.decode(t))
 ```
 
-理论上,Batch prediction把多条prompt一起输入模型,借助GPU的并行计算, 会比单条的prediction更高效. 但实际上并非如此:
-
-1. 在单条的prediction中, 碰到EOS就可以退出了. 但是在batch prediction中, 你无法预先知道会输出多长, 所以只能指定一个max length, 最后再根据EOS的位置进行cut off. 这必然造成计算量的浪费.
-2. 对于单条的prediction, 只要从prompt末尾开始就可以了. 但是对于batch, 要从最短的一个prompt的末尾开始, 并且要小心不要覆盖已有的prompt (上面代码中torch.where的作用).  
-	(所以， 也有人在实现的时候是从左边做padding，让输入按最右侧对齐)
+In theory, batch prediction is more efficient than single prediction because it multiple prompts can be processed by the model at once and take advantage of the GPU's parallel computing capabilities. However, in practice, this is not always the case:  
+  
+1. In single prediction, the process can be terminated once the EOS (end-of-sentence) token is encountered. However, in batch prediction, it is not possible to know in advance how long the output will be, so a maximum length must be specified and the output must be cut off at the EOS position. This inevitably results in wasted computation.  
+2. For single prediction, the process can start from the end of the prompt. However, for batch prediction, the process must start from the end of the shortest prompt, and care must be taken not to overwrite the existing prompts (this is where `torch.where` is used in the code above).  Therefore, some implementations use left-side padding and align the inputs to the right.
 
 ## Transformer Model
 
-以7B的模型为例, 模型参数为
-- **dim**=4096 Transformer的每一层(Decoder Layer)的输入、输出大小 (batch_size, seq_len, dim)
-- **n_layers**=32 Decoder的个数
-- **n_heads**=32 multihead attention 中head的个数.
-- **head_dim** = dim / n_heads = 4096 / 32 = 128 (从dim和n_heads可推算)
-- **vocab_size**=32000 Vocabulary中token的个数
+Take the 7B model as an example, the model parameters are as follows:  
+- **dim**=4096 The input and output size of each layer of the Transformer (Decoder Layer) (batch_size, seq_len, dim)  
+- **n_layers**=32 The number of Decoders  
+- **n_heads**=32 The number of heads in multihead attention.  
+- **head_dim** = dim / n_heads = 4096 / 32 = 128 (can be inferred from dim and n_heads)  
+- **vocab_size**=32000 The number of tokens in the Vocabulary
 
 ### class [Transformer](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L223)
 
-这个类包含了Transformer的总体逻辑.
-
-**Input**
-- tokens: (batch_size, seq_len) 输入的token, 如前文分析, 第一次调用时输入的是整个prompt, seq_len = min_prompt_length; 后续每次输入最后一个生成的token, seq_len=1.
-- start_pos: int 输入的是token开始的位置, 第一次调用时为0, 后续为当前输出位置.
-
-**Output**
-(batch_size, vocab_size) 每个prompt的next token logits.
-
-Transformer的逻辑如下:
+This class contains the overall logic of Transformer.  
+  
+**Input**  
+- tokens: (batch_size, seq_len) Input tokens, as analyzed in the previous section, the entire prompt is input when called for the first time, seq_len = min_prompt_length; Each subsequent input is the last generated token, seq_len=1.  
+- start_pos: int The input is the starting position of the token, which is 0 when called for the first time, and the current output position for subsequent calls.  
+  
+**Output**  
+(batch_size, vocab_size) Next token logits for each prompt.  
+  
+The logic of Transformer is as follows:
 ```python hl:17-18 {linenos=false,hl_lines=["17-18"],linenostart=1}
 # token to embedding
 # tokens (batch_size, seq_len) 
@@ -195,9 +190,9 @@ h = self.tok_embeddings(tokens)
 # shape: (seq_len, head_dim/2)
 freqs_cis = ... 
 
-# Attention mask
-# 在第一次调用时, mask是一个三角矩阵 (causal attention mask, shape t x t)
-# 后续step mask=None, 因为输入只有最后一个token, 它可以跟任意前面的k, v交互.
+# Attention Mask  
+# During the first call, the mask is a triangular matrix (causal attention mask, shape t x t)  
+# For subsequent steps, mask=None, because the input only has the last token, which can interact with any previous k, v.
 mask = ...  
 
 # Decoder layers x 32
@@ -215,24 +210,24 @@ output = self.output(h[:, -1, :])
 return output.float()
 ```
 
-其中tok_embeddings和output都只是普通的Feed Forward.
-RMS normalization本文略去不讲.
+In the code above, tok_embeddings and output are just ordinary Feed Forward.  
+We won't discuss about RMS normalization in this article.
 
 ### class [TransformerBlock](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L178)
-这个类包含了Decoder layer的实现 (上面代码中高亮的部份).
-
-**Input**
-
-- x: (batch_size, seq_len, dim) 也就是Transformer里面的h, 输入的token embedding
-- start_pos: int 输入的是token开始的位置, 第一次调用时为0, 后续为当前输出位置.
-- freqs_cis: (seq_len, head_dim/2) 每个位置预计算好的RoPE embedding的"复数" $e^{il}$. (因为一个复数是两个数字, 所以head_dim/2). 计算RoPE的过程可以看 [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63) 这个函数, 基本就是先把xq, xv也转成复数, 然后直接和 freqs_cis 相乘得到.
-- mask: causal attention mask. 在第一次调用时, mask是一个三角矩阵 (causal attention mask, shape t x t). 后续的调用中mask=None, 因为输入只有最后一个token, 它可以跟任意前面的k, v交互.
-
-**Output**
-
-(batch_size, seq_len, dim) Decoder block的输出, 也是下一个Decoder block的输入(所以output shape和input保持一致)
-
-Decoder Layer的逻辑非常直观, 几乎就跟前面的伪代码一致, 只是多传了 start_pos, RoPE, mask这些参数.
+This class contains the implementation of the Decoder layer (the highlighted part in the code above).  
+  
+**Input**  
+  
+- **x: (batch_size, seq_len, dim)**  this is called h in the Transformer paper, i.e. the input token embedding  
+- **start_pos: int** the starting position of the input token, 0 for the first call, and the current output position for subsequent calls.  
+- **freqs_cis: (seq_len, head_dim/2)** the pre-computed "complex number" $e^{il}$ of the RoPE embedding for each position. (Since a complex number is two numbers, hence head_dim/2). The computation of RoPE can be found in the function [apply_rotary_emb](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L63), which basically converts xq, xv to complex numbers first and then directly multiplies them with freqs_cis.  
+- **mask**: causal attention mask. In the first call, the mask is a triangular matrix (causal attention mask, shape t x t). In subsequent calls, mask=None, since the input has only the last token, which can attend to any previous k, v.  
+  
+**Output**  
+  
+(batch_size, seq_len, dim) the output of the Decoder block, which is also the input to the next Decoder block (so the output shape is the same as the input).  
+  
+The logic of the Decoder Layer is quite straightforward, almost the same as the pseudo-code above, except that it passes in start_pos, RoPE, mask, etc.
 
 ```python
 h = x + self.attention.forward(self.attention_norm(x), start_pos, freqs_cis, mask)
@@ -240,27 +235,27 @@ out = h + self.feed_forward.forward(self.ffn_norm(h))
 return out
 ```
 
-这里面一共有attention, feed_forward和norm三种layer, 接下来只分析Attention.
+There are three types of layers in TransformerBlock: attention, feed_forward, and norm. Since the other two are fairly straightforward, we will only analyze Attention.
 
 ### class [Attention](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L119)
 
-接下来就是重头戏了, 这是Transformer里被认为最关键的一个结构Attention (上面代码中的红色部份).
-
-因为attention是decoder layer中的第一个结构(忽略不改变形状的norm), 所以它的Input 和上面Decoder Layer中描述的一样, 而output shape也一样, 所以我们不再重复了, 这里重点分析一下它到底在计算什么:
-
-1. 把embedding拆分成多个head, 也就是从(batch_size, seq_len, dim) 变成了 (batch_size, seq_len, n_heads, head_dim):
+Now comes the Attention layers, considered the most critical structure in Transformer.  
+  
+Since attention is the first layer in the decoder blocks (excluding the norm that does not change the shape), its input and output shapes are the same as described in the Decoder Layer above, so we will not repeat it here. Instead, let's focus on what it calculates:  
+  
+1. Split the embedding into multiple heads, changing the shape from (batch_size, seq_len, dim) to (batch_size, seq_len, n_heads, head_dim):
 
 ```python
 xq = xq.view(bsz, seqlen, self.n_local_heads, self.head_dim)xk = xk.view(bsz, seqlen, self.n_local_heads, self.head_dim)xv = xv.view(bsz, seqlen, self.n_local_heads, self.head_dim)
 ```
 
-2. 按照RoPE的定义计算positional embedding. 这里有个细节, 只有query和key计算了positional embedding, 而value没有计算.
+2. Calculate positional embedding according to the definition of RoPE. One detail: only query and key have positional embeddings, while value does not.
 
 ```python
 xq, xk = apply_rotary_emb(xq, xk, freqs_cis=freqs_cis)
 ```
 
-3. 从kv cache中取出前t-1个step的k和v, 并和当前step的k,v 合并到一起
+3. Retrieve the k and v of the previous t-1 steps from the kv cache, and merge them with the k and v of the current step
 
 ```python
 self.cache_k = self.cache_k.to(xq)
@@ -273,7 +268,7 @@ keys = self.cache_k[:bsz, : start_pos + seqlen]
 values = self.cache_v[:bsz, : start_pos + seqlen]
 ```
 
-4. 最后, 计算multi head attention
+4. Finally, compute multi head attention:
 
 ```python
 xq = xq.transpose(1, 2)
@@ -291,48 +286,48 @@ output = output.transpose(
 return self.wo(output)
 ```
 
-这里我们再分析一下, multi head attention和 single head attention的关系是什么?
+Let's further analyze the relationship between multi-head attention and single-head attention.  
+  
+For multi-head attention, the computation process is as follows:  
+1. Transpose the head dimension of q, k, and v to the front (batch_size, seq_len, n_heads, head_dim) ⇒ (batch_size, n_heads, seq_len, head_dim).  
+2. Regard batch_size and n_heads as a whole batch dimension, and then calculate score = (q * k.T) / sqrt(head_dim).  
+3. output = score * v.  
+4. Transpose the head of output back, and then merge multiple heads. (batch_size, n_heads, seq_len, head_dim) ⇒ (batch_size, seq_len, n_heads, head_dim) ⇒ (batch_size, seq_len, dim).  
+  
+Without considering the batch dimension:  
+- The matrix multiplication in single-head attention is (seq_len, dim) * (dim, seq_len), with a complexity of O(seq_len^2 * dim).  
+- For multi-head attention, its matrix multiplication consists of n_head independent (seq_len, head_dim) * (head_dim, seq_len).  
+  
+The complexity is O(n_head * seq_len^2 * head_dim) = O(seq_len^2 * dim).  
+  
+Therefore, multi-head attention is essentially equivalent to splitting the embedding into n parts, and then performing attention on each part separately. The overall computational complexity is the same as single-head attention.
 
-对于multi head, 它的计算过程如下:
-1. 把q,k,v的head维度交换到前面 (batch_size, seq_len, n_heads, head_dim) ⇒ (batch_size, n_heads, seq_len, head_dim)
-2. 把 batch_size和n_heads 看作一个整体的batch维度, 然后计算 score = (q * k.T) / sqrt(head_dim)
-3. output = score * v
-4. 把output的head交换回来, 然后把多个head进行合并. (batch_size, n_heads, seq_len, head_dim) ⇒ (batch_size, seq_len, n_heads, head_dim) ⇒ (batch_size, seq_len, dim)
-
-假如把batch维度拿掉:
-- single head中的矩阵乘法是 (seq_len, dim) * (dim, seq_len), 复杂度为 O(seq_len^2 * dim)
-- 对于multi head, 它的矩阵乘法为n_head个独立的(seq_len, head_dim) * (head_dim, seq_len)
-
-复杂度为 O(n_head * seq_len^2 * head_dim) = O(seq_len^2 * dim)
-
-所以, 本质上multi head相当于把embedding拆成n份, 然后每一份单独做attention, 总体计算复杂度和single head attention是一样的.
-
-# 实验
-
-## 关于内存占用
-
-理论上7B的模型的内存占用大约为7x2 = **14GB** (使用float16). 但是如果运行官方LLaMA代码, 发现内存占用为**22GB**. 多出来的内存是怎么被用掉的呢? 前面讲到, inference的时候是有kv cache的,
-
-每层Decoder Layer的key/value cache的大小为:
-
-(max_batch_size, max_seq_len, n_heads, head_dim) = \[32, 512, 32, 128\]
-
-所以总cache大小为
-
-2 (k, v caches) * 32 (layers) * 32 (max batch size) * 512 (max seq len) * 32 (number of heads) * 128 (head dim) * 2bytes/param = **8G**
-
-加上模型的14GB, 刚好是22GB左右. 所以要降低内存占用量, 主要的方法是就要减少max batch size和max sequence length. 对于ChatBot来说这不是个问题, 只要设置batch size=1即可
-
-在刚刚发布的[Falcon](https://github.com/huggingface/blog/blob/main/falcon.md#the-falcon-models)模型中, 使用了[multi-query attention](https://arxiv.org/pdf/1911.02150.pdf) (7B) 和 [group query attention](https://arxiv.org/pdf/2305.13245.pdf) (40B), 在多个head中共用key 和value (每个head的query仍然不一样), 减少了k v cache的大小, 从而减少inference时的内存占用. [这里](https://github.com/Lightning-AI/lit-parrot/blob/0368dbb0316d1bfb0addd6aa1126f1fedcb8f413/lit_parrot/config.py#L10)有一个对multi/group query attention的一个直观解释.
+# Experiment  
+  
+## On Memory Usage  
+  
+Theoretically, the memory usage of a 7B model is about 7x2 = **14GB** (using float16). However, if we run the official LLaMA code, we find that the memory usage is **22GB**. How is the extra memory used? As mentioned earlier, there is a kv cache during inference.  
+  
+The size of the key/value cache for each decoder layer is:  
+  
+(max_batch_size, max_seq_len, n_heads, head_dim) = \[32, 512, 32, 128\]  
+  
+So the total cache size is  
+  
+2 (k, v caches) * 32 (layers) * 32 (max batch size) * 512 (max seq len) * 32 (number of heads) * 128 (head dim) * 2bytes/param = **8G**  
+  
+Adding this to the model's 14GB, we get around 22GB. Therefore, the main way to reduce memory usage is to reduce the max batch size and max sequence length. For a chatbot, this is not a problem, as we can simply set the batch size to 1.  
+  
+In the recently released [Falcon](https://github.com/huggingface/blog/blob/main/falcon.md#the-falcon-models) model, [multi-query attention](https://arxiv.org/pdf/1911.02150.pdf) (7B) and [group query attention](https://arxiv.org/pdf/2305.13245.pdf) (40B) are used, which share keys and values among multiple heads (the queries for each head are still different), reducing the size of the k v cache and thus reducing the memory usage during inference. [Here](https://github.com/Lightning-AI/lit-parrot/blob/0368dbb0316d1bfb0addd6aa1126f1fedcb8f413/lit_parrot/config.py#L10) is an intuitive explanation of multi/group query attention.
 
 ## Prompting
 
-这里用LLaMA的inference代码进行sentiment analysis.
-
-我们从[Metacritic](https://www.metacritic.com/game/switch/the-legend-of-zelda-tears-of-the-kingdom)上找来一些对《塞尔达传说: 王国之泪》的评论, 然后让LLaMA来判断评论是正面还是负面. 注意LLaMA是一个**语言模型**而不是**ChatBot**, 所以要用**补全**的任务去提示它, 而不是**问它问题**.
-### Exp 1
-
-我们用这样一个prompt, 希望模型能输出positive或者negative:
+Here we use LLaMA's inference code to perform sentiment analysis.  
+  
+Let's take some reviews of "The Legend of Zelda: Tears of the Kingdom" from [Metacritic](https://www.metacritic.com/game/switch/the-legend-of-zelda-tears-of-the-kingdom), and then let LLaMA judge whether the reviews are positive or negative. Note that LLaMA is a **language model** rather than a **ChatBot**, so we need to use the task of **completion** to prompt it, rather than **asking it questions**.  
+### Exp 1  
+  
+We use the following prompt, expecting the model to output positive or negative:
 
 ```
 `The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.`
@@ -340,15 +335,15 @@ return self.wo(output)
 The sentiment of the comment above is
 ```
 
-然而事与愿违, 模型输出的是
+However, things didn't go as expected. The model output was:
 
 > The sentiment of the comment above is **not uncommon**
 
-所以我们发现了使用LM(相对于传统的classification)来做情感分析的**缺点1**: 模型的输出过于灵活, 以至于不一定输出我们想要的答案格式
+Therefore, we found **disadvantage 1** of using LM (compared to traditional classification) for sentiment analysis: the model's output is too flexible, so it does not necessarily output the answer format we want.
 
 ### Exp 2
 
-修改prompt为以下形式：
+Let's modify the prompt:
 
 ```
 `The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.`
@@ -357,15 +352,15 @@ Question: What is the sentiment of the comment above, positive or negative?
 Right Answer:
 ```
 
-这次模型输出的结果是:
+This time the model outputs:
 
 > Right Answer: **Negative**
 
-又实验几个其他的comment, 发现模型能够稳定输出positive或者negative了. 这基本解决了缺点1, 但是还有一个问题: 在传统classification中, 模型是能输出一个0-1之间的数值, 这个数值代表了模型认为它是negative还是positive的一个confidence. 如果使用生成式模型, 只输出label, 没有办法知道模型的confidence. 以上面这个例子而言, 其实这条评论前部份是positive, 后半部份是negative, 难以用一个词来概括. 这是生成式模型做情感分析的**缺点2**.
+After experimenting with several other comments, I found that the model was able to stably output positive or negative results. This basically solved drawback 1, but there is still a problem: in traditional classification, the model can output a value between 0 and 1, which represents the model's confidence in whether it is negative or positive. If a generative model is used, only the label is output, and there is no way to know the model's confidence. In the above example, the first part of the comment is actually positive, while the second part is negative, making it difficult to summarize in a single word. This is **drawback 2** of using generative models for sentiment analysis.
 
 ## Scoring
 
-那么, 有没有办法让LLaMA输出结果的同时, 给出一个score代表这个结果的confidence或者likelihood呢? 我们知道LM每一步的输出的logits求一个softmax就是 p(x[t] | x[:t]), 所以只要把log_softmax相加就可以得到一个score:
+So, is there a way for LLaMA to output a score representing the confidence or likelihood of the result at the same time? We know that the logits of the output of each step of the LM are p(x[t] | x[:t]), so we can get a score by adding the log_softmax:
 ```python
 class LLaMA:
     ...
@@ -390,9 +385,10 @@ class LLaMA:
 		return score
 ```
 
-有了这个score以后, 我们可以分别求 score(prompt, “Negative”) 和 score(prompt, “Positive”), 然后求一个softmax来得到一个0-1之间的数值, 表示它的情感正负值.
+With this score, we can calculate `score(prompt, "Negative")` and `score(prompt, "Positive")` separately, and then calculate a softmax to get a value between 0 and 1, which represents its emotional positive and negative values.  
+  
+The following are some experimental results of scoring:
 
-以下是几个scoring的实验结果:
 ```
 `The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.`
 ```
@@ -408,14 +404,14 @@ class LLaMA:
 ```
 >softmax = [positive=0.1095, negative=0.8905], score_pos=-3.0722, score_neg=-0.9763
 
-需要注意的是这样的scoring仍然跟传统的classification有很大区别, 原因是:
-
-1. LLM的输出范围是整个vocabulary. 所以如果你观察整个logits, 输出Positive和Negative的概率都是相对高的, 比输出其他token的概率高. 在这里我们相当于是对模型输出”Positive”和”Negative”的概率进行比较来给出一个score.
-2. scoring的前提是你要预判模型会输出什么. 举例来说, 即使对一个正面的例子, score(”Negative”)会比score(小写的”positive”)高, 因为模型的概率分布中这里的回答大写的概率高.
-3. score跟回答的句子长度有关. (token长度越长, 概率就越低) 如果两个answer长度不一样, 那就不能简单的用score来比较.
-4. 还有个比较subtle的问题, Positive和Negative会被SentencePiece切成\[Pos, itive\] 和 \[Neg, ative\]
-
-所以
+It's worth noting that such scoring is still quite different from traditional classification, for the following reasons:  
+  
+1. The output range of the LLM is the entire vocabulary. Therefore, if you observe the entire logit, the probabilities of outputting Positive and Negative are relatively high, higher than the probabilities of outputting other tokens. Here, we are essentially comparing the probabilities of the model outputting "Positive" and "Negative" to give a score.  
+2. The premise of scoring is that you have to predict what the model will output. For example, even for a positive example, score("Negative") will be higher than score("positive" in lowercase), because the probability of the answer being capitalized is higher in the model's probability distribution.  
+3. The score is related to the length of the answer sentence. (The longer the token length, the lower the probability) If the lengths of two answers are different, we cannot simply compare them using the score.  
+4. There is another subtle issue, Positive and Negative will be segmented by SentencePiece into \[Pos, itive\] and \[Neg, ative\].  
+  
+Therefore
 
 $$
 score(prompt, Positive) = score(Pos | prompt) \cdot score(itive | prompt, Pos)
@@ -424,29 +420,29 @@ $$
 score(prompt, Negative) = score(Neg | prompt) \cdot score(ative | prompt, Neg)
 $$
 
-假如我们心中的正确答案是Positive, 那么模型输出 score(Pos | p) > score(Neg | p) 是没问题的, 但是在第二步, 因为假设模型已经输出了Neg, 那么很大可能 score(ative | p, Neg) > score(itive | p, Neg). 所以这一步的score其实没有太大意义了.
+If the correct answer in our mind is Positive, then the model output score(Pos | p) > score(Neg | p) is fine. However, in the second step, since it is assumed that the model has output Neg, it is very likely that score(ative | p, Neg) > score(itive | p, Neg). Therefore, the score of this step is actually not very meaningful.
 
-## Attention Weights的分析
+## Attention Weights Analysis
 
-一种分析transformer的方法是把attention weights matrix打印出来, 看看各个token之间的attention是多少. 由于LLaMA使用的是multi head attention, 所以其实有n_heads = 32个不同的weight matrix (seq_len x seq_len). 我们这里简单粗暴, 直接取每个head的均值或最大值来分析. ( [这篇论文](https://aclanthology.org/P19-1580.pdf)里提到了一个更fancy的方法, 不过我还没有仔细研究) 另外需要说明的一点是我们只研究第一层(最靠近输入的那一层)attention的weight matrix.
-
-注: Attention weights在这个[score](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L141)变量里.
-
-以这个句子为例
+One way to analyze the transformer is to print out the attention weights matrix and see how much attention is paid between each token. Since LLaMA uses multi-head attention, there are actually 32 different weight matrices (seq_len x seq_len) for n_heads = 32. Here, we take a simple and crude approach by directly taking the average or maximum value of each head for analysis. (A more sophisticated method is proposed in [this paper](https://aclanthology.org/P19-1580.pdf), but I haven't studied it carefully yet.) It should also be noted that we only study the attention weight matrix of the first layer (the layer closest to the input).  
+  
+Note: Attention weights are in this [score](https://github.com/facebookresearch/llama/blob/57b0eb62de0636e75af471e49e2f1862d908d9d8/llama/model.py#L141) variable.  
+  
+Take this sentence as an example:
 
 ```The game is perfect. It’s much more interesting than breath of the wild! However, it is dragged down by the performance of NS. The frame number is not stable enough.```
 
 > Question: What is the sentiment of the comment above, positive or negative?  
 > Right Answer:
 
-模型在读到末尾时, 输出的max attention和average attention分别为
+When the model reads to the end, the output max attention and average attention are 
 ![max_attention](max_attention.png)
 max attention
 
 ![avg-attention](avg-attention.png)
 average attention
 
-好像乍一看没法看出什么, 但是如果把”sentiment”这个词和其他词的attention单独打印, 发现如下的score:
+At first glance, there seems to be no particular pattern, but if we print the attention of the word "sentiment" and other words separately, we will find the following scores:
 
 ```
 sentiment 0.08599853515625
@@ -512,18 +508,18 @@ Answer 0.0
 , 0.0
 ```
 
-除去排名较高的没有什么意义的词, 可以看到 “not stable enough”, “However”这些词的score大于”perfect”, “interesting”这些词. 这在一定程度上可以解释模型为什么认为这个评论的负面大于正面 (当然, 从结果而言模型这里的判断是错的, 因为这个评论后面给了10分).
+After removing the high-ranking but meaningless words, we can see that the scores of words like "not stable enough" and "However" are higher than words like "perfect" and "interesting". This can partly explain why the model thinks the sentiment of this review is more negative than positive (of course, in terms of the result, the model's judgment here is wrong, because this review gave a score of 10 later).
 
-## 一些其他的开源模型
+## About Other Open Source Models
 
-除了LLaMA和前面提到的Falcon之外,还有很多其他开源模型, 例如和LLaMA完全一样的Vicuna和Alpaca, 以及略有区别的StableLM, RedPajama, Pythia 等等. 事实上这些模型的区别非常小(个别参数和数据集的区别), 以至于可以共用[一套代码](https://github.com/Lightning-AI/lit-parrot)来实现.
+In addition to LLaMA and the aforementioned Falcon, there are many other open-source models, such as Vicuna and Alpaca, which are exactly the same as LLaMA, and StableLM, RedPajama, Pythia, etc., which are slightly different. In fact, the differences between these models are so small (differences in individual parameters and datasets) that they can share [a set of code](https://github.com/Lightning-AI/lit-parrot) for implementation.
 
 # Future Work
 
-本文只分析了inference部份的代码, 因为官方没有放出training部份. 相对于inference来说, training会有以下区别:
-
-1. 由于data是已知的, training是完全并行的: input是`tokens[:t]`, output是`tokens[1:t+1]`
-2. training包含了optimizer (LLaMA使用的是AdamW)
-3. training需要非常多的计算资源 (数据量大, batch size大, 多GPU并行) 普通人根本玩不起.
-
-不过小数据集的finetuning和adapter tuning还是可以玩的, 有兴趣可以参见[Lit-LLaMA](https://github.com/Lightning-AI/lit-llama).
+This article only analyzes the code for the inference part, as the official version does not provide the training part. Compared with inference, training has the following differences:  
+  
+1. Since the data is known, the training is completely parallel: the input is `tokens[:t]`, and the output is `tokens[1:t+1]`.  
+2. Training includes an optimizer (LLaMA uses AdamW).  
+3. Training requires a lot of computing resources (large amounts of data, large batch sizes, multiple GPUs in parallel). Ordinary people can't afford it at all.  
+  
+However, fine-tuning and adapter tuning of small datasets are still possible. If you are interested, you can refer to [Lit-LLaMA](https://github.com/Lightning-AI/lit-llama).

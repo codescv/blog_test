@@ -52,5 +52,7 @@ highlight_name: true
 ---
 
 现Google工程师/Tech Lead，前小米、亚马逊、PDD工程师. 
+
 互联网从业10余年, 主要做Ads和machine learning.
+
 爱好音乐，自学吉他，偶尔作曲编曲。

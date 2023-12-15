@@ -12,9 +12,7 @@ authors:
   - admin
 
 tags:
-  - Academic
-  - Wowchemy
-  - Markdown
+  - Demo
 ---
 
 Welcome 👋

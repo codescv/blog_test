@@ -10,7 +10,7 @@ image:
   caption: 'Image credit: [**IndustryWired**](https://industrywired.com)'
 ---
 > Knowledge from **reading a paper** is shallow;  
-> to truly understand, you must **run the code** yourself.  
+> to truly understand, you must **run it** yourself.  
 >
 > -- <cite>You Lu</cite>
 
@@ -103,11 +103,11 @@ def generate(prompt, temperature):
 		logits /= temperature
 		logits = topk(logits)
 		next_token = sample(softmax(logits))
-    if next_token = eos:
-      break
+	    if next_token = eos:
+		    break
 		tokens.append(next_token)
   
-  return tokenizer.decode(tokens)
+	return tokenizer.decode(tokens)
 ```
 
 因为sampling的过程是step by step的, 如果结果较长, 可以异步返回, 结合HTTP长连接的技术就可以实现像ChatGPT那样一个字一个字往外蹦的效果.

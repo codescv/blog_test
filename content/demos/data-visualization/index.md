@@ -3,9 +3,7 @@ title: 📈 Communicate your results effectively with the best data visualizatio
 summary: Use popular tools such as Plotly, Mermaid, and data frames.
 date: 2023-10-25
 tags:
-  - Hugo
-  - Wowchemy
-  - Markdown
+  - Demo
 image:
   caption: 'Image credit: [**Unsplash**](https://unsplash.com)'
 ---
