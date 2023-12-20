@@ -5,6 +5,11 @@ summary: Introduction to Stable Diffusion.
 tags: 
   - DeepLearning
   - Python
+links:
+  - icon_pack: custom
+    icon: colab
+    name: Colab
+    url: 'https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/stable-diffusion-1.ipynb'
 ---
 
 # Introduction
