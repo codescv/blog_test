@@ -12,6 +12,8 @@ links:
     url: 'https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/stable-diffusion-1.ipynb'
 ---
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/stable-diffusion-1.ipynb]
+
 # Introduction
 
 Stable Diffusion is a model to generate images from text (aka. prompts). In this guide I will show you:
