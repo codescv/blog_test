@@ -1,6 +1,6 @@
 ---
 title: T5 Paper Notes
-summary: T5 is an encoder-decoder transformer. It utilizes multi-task learning in the training process. By studying the T5 paper, we can learn many interesting details about pre-training of transformer models.
+summary: T5 is an encoder-decoder transformer. It utilizes multi-task learning in the training process. By studying the T5 paper, we can learn many interesting details about pre-training of transformer models. This note was written in late 2020, with updated notes from 2023.
 date: 2020-08-04
 tags:
   - NLP
@@ -31,15 +31,15 @@ This section will walk through the models and datasets used in T5.
 
 This section introduces the models employed in T5. Some earlier models were based on RNNs; ULMFiT is cited here as an example. Today, there seems to be a perception that RNNs (including LSTMs) are passé and that Transformers are *de rigueur*. I disagree with this perception: if you are resource-constrained and want to pretrain, ULMFiT is still an excellent choice, achieving remarkable results on relatively small datasets and with a single GPU. Also, Transformers do not outperform RNNs due to some fundamental conceptual superiority, but rather because they are easier to scale to very large models and datasets (perhaps analogous to the reasons DNNs beat XGBoost for very large scale recommender systems). If someone were to invent a way to train RNNs much faster, they might yet make a comeback; indeed, there are aspects of the Transformer-XL architecture that suggest RNNs may be due for a renaissance.
 
-{% callout note %}
+{{% callout note %}}
 Note from 2023: As of today, RNNs have largely been supplanted by Transformers, but the ideas behind RNNs have endured. In fact, the strategy of parameter sharing heavily employed in many efficient Transformer architectures is inspired by ideas that are closely related to RNNs.
-{% /callout %}
+{{% /callout %}}
 
 T5 is based on the Transformer. Unlike BERT, which only uses a Transformer Encoder, T5 uses both an encoder and a decoder, and casts all problems as text-to-text.
 
-{% callout note %}
+{{% callout note %}}
 Note from 2023: As of today, the popularity of LLMs and generative tasks has given rise to decoder-only architectures, such as GPT, PaLM, and LLaMA. In my opinion, decoder-only architectures are more streamlined and require fewer hyper-parameters to tune (e.g., how many parameters should be allocated to the encoder vs. the decoder?) than encoder-decoder architectures, and are somewhat more versatile.
-{% /callout %}
+{{% /callout %}}
 
 T5’s Transformer differs slightly from the original version in the following ways:
 
@@ -49,9 +49,9 @@ T5’s Transformer differs slightly from the original version in the following w
 
 The paper also notes that they did not experimentally verify the impact of these modifications on performance.
 
-{% callout note %}
+{{% callout note %}}
 Note from 2023: The recent LLaMA model from Meta also uses pre-normalization and relative position embedding. This suggests that core Transformer architectures have remained largely unchanged over the past few years.
-{% /callout %}
+{{% /callout %}}
 
 ## 2.2 The Colossal Clean Crawled Corpus
 
@@ -78,9 +78,9 @@ And so on.
 
 The largest model of T5 has **11B** parameters. It is infeasible to iterate on such a large model repeatedly during experimentation and hyperparameter tuning. Therefore, the T5 team conducted a set of experiments on a much smaller model prior to pretraining, with the goal of discovering the most promising model configurations and pretraining tasks. They began with a baseline model and built upon it with various experiments, observing how these affected performance on fine-tuned tasks.
 
-{% callout note %}
+{{% callout note %}}
 As of 2023, the open-source LLaMA models are available in 7B and 13B sizes, and a model with approximately 10B parameters is now fairly standard.
-{% /callout %}
+{{% /callout %}}
 
 These experiments explored:
 
@@ -98,9 +98,9 @@ In this section, we introduce the baseline model.
 
 The experiments made use of an encoder-decoder Transformer model. This architecture is largely identical to BERT-base, resulting in roughly 2x the number of parameters.
 
-{% callout note %}
+{{% callout note %}}
 Note that this is the model used for experimentation and is not the final T5 model.
-{% /callout %}
+{{% /callout %}}
 
 ### 3.1.2 Training
 
@@ -110,7 +110,7 @@ With a sequence length of 512 and a batch size of 128, each batch contained appr
 
 [^packing]: A technique that combines as many sequences as possible (total length roughly equal to `seq_len`) into a single example to conserve computational resources.
 
-For the pretraining learning rate, the authors used $learning\_rate = 1/\sqrt{max(n, k)}$, where $n$ is the step number and $k$ is a constant equal to $10^4$. They also mention that a triangular learning rate, as proposed by Howard and colleagues, performs slightly better. (As an aside, I highly recommend checking out fast.ai for more information on this; Howard has successfully applied this technique to both image and NLP models.) The reason this schedule was not used in the experiments here is because some experiments varied the number of training steps, whereas the triangular schedule requires knowing the total number of steps in advance.
+For the pretraining learning rate, the authors used $learningRate = 1/\sqrt{max(n, k)}$, where $n$ is the step number and $k$ is a constant equal to $10^4$. They also mention that a triangular learning rate, as proposed by Howard and colleagues, performs slightly better. (As an aside, I highly recommend checking out fast.ai for more information on this; Howard has successfully applied this technique to both image and NLP models.) The reason this schedule was not used in the experiments here is because some experiments varied the number of training steps, whereas the triangular schedule requires knowing the total number of steps in advance.
 
 During fine-tuning, the authors trained for $2^{18}$ steps. This was chosen as a compromise given the varying sizes of the fine-tuning datasets. A constant learning rate of $0.001$ was used. Checkpoints were saved and evaluated every 5,000 steps, and the best validation checkpoint was selected. The best performing checkpoint was selected independently for each task.
 
@@ -118,9 +118,9 @@ During fine-tuning, the authors trained for $2^{18}$ steps. This was chosen as a
 
 T5 uses SentencePiece as its tokenization scheme. Since they eventually wanted to explore translation tasks, the vocabulary was also jointly learned on German, French, and Romanian. The final vocabulary size was 32k. As a result, T5 is not well-suited for languages like Chinese and Japanese, because their tokens are not present in the vocabulary and the pretraining data does not contain these languages.
 
-{% callout note %}
+{{% callout note %}}
 For languages outside of English, such as Chinese and Japanese, you can explore a successor model to T5 called [mT5](https://github.com/google-research/multilingual-t5).
-{% /callout %}
+{{% /callout %}}
 
 ### 3.1.4 Unsupervised Objective
 Recent research has shown that a denoising objective is more effective for pretraining than a left-to-right LM. As a result, T5 uses an objective similar to BERT's. However, since T5 is a seq2seq model, rather than masking the inputs like BERT, T5 applies transformations to the outputs. For example:

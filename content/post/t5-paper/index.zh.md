@@ -1,6 +1,6 @@
 ---
 title: T5论文笔记
-summary: T5是一个Encoder-Decoder架构的transformer. 它的训练过程使用了multi-task learning. 通过研究T5论文我们可以知道transformer模型的预训练中许多有趣的细节.
+summary: T5是一个Encoder-Decoder架构的transformer. 它的训练过程使用了multi-task learning. 通过研究T5论文我们可以知道transformer模型的预训练中许多有趣的细节. 本文写于2020年末, 并在2023年更新了一些notes.
 date: 2020-08-04
 tags:
   - NLP
@@ -110,9 +110,9 @@ seq len = 512, batch size = 128, 使用了packing[^packing]以后，一个batch�
 
 [^packing]: 将尽可能多的sequence放进一条样本内(总长度约等于seq len), 以达到节省计算资源的目的.
 
-在pretrain中，他们使用了$learning\_rate = 1/\sqrt{max(n,k)}$的方式, n为step, k为一个常数$10^4$ . 他们也提到了Howard等人提出的triangular learning rate会比这个效果稍好。顺便说一下可以去看看fast.ai上的讲解，Howard在图像和NLP模型里都用这个方法达到了不错的效果。之所以这里的experiment没有用这种方法是因为他们的一些实验需要training steps是变化的，而triangular需要一开始知道要训练多少步。
+在pretrain中，他们使用了$learningRate = 1/\sqrt{max(n,k)}$的方式, n为step, k为一个常数$10^4$ . 他们也提到了Howard等人提出的triangular learning rate会比这个效果稍好。顺便说一下可以去看看fast.ai上的讲解，Howard在图像和NLP模型里都用这个方法达到了不错的效果。之所以这里的experiment没有用这种方法是因为他们的一些实验需要training steps是变化的，而triangular需要一开始知道要训练多少步。
 
-在finetune中，训练的$step = 2^{18}$. 因为finetune使用的数据集有大有小，这个step数是一个考虑到各个数据集的tradeoff. 使用了恒定的$learning\_rate = 0.001$, 然后每隔5000个step记录结果并选择最好的validation checkpoint. 每个task的最好的performance checkpoint是独立选择的。
+在finetune中，训练的$step = 2^{18}$. 因为finetune使用的数据集有大有小，这个step数是一个考虑到各个数据集的tradeoff. 使用了恒定的$learningRate = 0.001$, 然后每隔5000个step记录结果并选择最好的validation checkpoint. 每个task的最好的performance checkpoint是独立选择的。
 
 ### 3.1.3 Vocabulary
 T5使用了sentencepice作为tokenization的方案。因为最终要用到translation的方案，所以vocabulary也在German, Fresh, Romanian上fit过一遍。最终vocabulary大小为32k. 所以T5应该没法很好的处理中文和日文了，因为vocabuary里没有这些token, pretrain data里也不包含这些语言。
@@ -207,7 +207,7 @@ prefix LM: premise: I hate pigeons. hypothesis: My feelings towards pigeons are 
 这一节也比较有意思。它比较了不同pretrain dataset的影响。
 
 ### 3.4.1 Unlabeled Data Sets
-这里比较了不同的dataset, 比较有意思的发现: (注意因为只pretrain了$$2^{35} \approx 34B$$ tokens, 所以数据集大小并不代表全train完了)
+这里比较了不同的dataset, 比较有意思的发现: (注意因为只pretrain了$2^{35} \approx 34B$ tokens, 所以数据集大小并不代表全train完了)
 
 1. C4(745 GB) 比 C4 unfiltered(6.1TB)效果好。说明了data cleaning的重要性。
 2. WebText-like(17GB)的效果很好。这个dataset只包含reddit上score >= 3的内容。说明data quality很重要！读好书，才能成为一个好人。
@@ -265,7 +265,7 @@ multi-task pretrain + finetune结果可以跟baseline差不多. leave one out效
 
 结论:
 
-1. 模型大小和训练时间: $2 \times size + 2 \times training\_steps$ 的效果约等于 $4 \times size + 1 \times training\_steps$.
+1. 模型大小和训练时间: $2 \times size + 2 \times trainingSteps$ 的效果约等于 $4 \times size + 1 \times trainingSteps$.
 2. ensemble: $4 \times ensemble$ 不如模型扩大4倍, 但它的提升是和其他方法正交的。
 
 ## 3.7 Putting It All Together
