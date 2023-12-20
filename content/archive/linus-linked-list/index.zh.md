@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "二级指针在链表操作中的应用"
-date: 2013-07-20 19:44
+date: 2013-07-20
 comments: true
 categories: C
 ---

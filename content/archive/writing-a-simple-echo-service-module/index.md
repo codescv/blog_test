@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Writing a Simple Echo Service Module'
-date: 2012-05-25 09:08
+date: 2012-05-25
 comments: true
 categories: [erlang, ejabberd]
 ---

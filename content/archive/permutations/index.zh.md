@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "排列问题"
-date: 2013-09-07 12:47
+date: 2013-09-07
 comments: true
 categories: 
 ---

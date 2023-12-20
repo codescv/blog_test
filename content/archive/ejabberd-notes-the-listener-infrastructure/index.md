@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'The Ejabberd Socket Infrastructure'
-date: 2012-05-23 13:49
+date: 2012-05-23
 comments: true
 categories: [erlang, ejabberd]
 ---

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "使用virtualenv创建隔离的python环境"
-date: 2013-07-28 18:05
+date: 2013-07-28
 comments: true
 categories: python
 ---

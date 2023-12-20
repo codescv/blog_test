@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "为virtualbox中的Linux虚拟机磁盘扩容"
-date: 2013-08-20 20:02
+date: 2013-08-20
 comments: true
 categories: 
 ---

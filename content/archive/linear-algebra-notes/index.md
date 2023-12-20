@@ -5,15 +5,15 @@ date: "2017-05-26 21:36:02 +0800"
 ---
 
 ## column space and null space
-$$A$$ is a $$m \times n$$ matrix
-$$R = rref(A) $$ with rank $$r$$
+$A$ is a $m \times n$ matrix
+$R = rref(A) $ with rank $r$
 
 We have the following definitions:
 column space of $A$:  $ C(A) = \{ A\vec{x} | \vec{x} \in R^n \} $
 null space of $A$: $N(A) = \{ \vec{x} | A\vec{x} = \vec{0} \}$
 
 then:
-$$C(A)$$ = span(all pivot columns in A) (pivot columns in A means the corresponding columns to those pivot columns in R)
+$C(A)$ = span(all pivot columns in A) (pivot columns in A means the corresponding columns to those pivot columns in R)
 
 ## Why the pivot columns in A are the basis of C(A) ?
 first we need to prove that the pivot columns are linearly independent:
@@ -22,11 +22,11 @@ then we can show that the free columns are linear combinations of the pivot colu
 [https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/showing-that-the-candidate-basis-does-span-c-a](https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/showing-that-the-candidate-basis-does-span-c-a)
 
 Thus we have:
-$$dim(C(A))$$ = # of pivot variables = $$rank(A)$$
+$dim(C(A))$ = # of pivot variables = $rank(A)$
 
-$$N(A) = N(R)$$ (because elimination does not change the solutions)
+$N(A) = N(R)$ (because elimination does not change the solutions)
 
-$$dim(N(A))$$ = # of free variables = $$n -$$ # of pivot variables = $$n - r$$
+$dim(N(A))$ = # of free variables = $n -$ # of pivot variables = $n - r$
 
 # Linear transformations
 
@@ -77,7 +77,7 @@ $$ \vec{x_p} = A(A^TA)^{-1}A^T\vec{x} $$
 This shows that projections are linear transformations.
 
 ## orthogonal complement
-$$V$$ is a subspace of $$S$$, then any vector $$\vec{v} \in S$$ can be written as
+$V$ is a subspace of $S$, then any vector $\vec{v} \in S$ can be written as
 $$ \vec{v} = \vec{p} + \vec{n} $$
 where $\vec{p} \in V$ and $\vec{n} \in V^\bot$, $V^\bot$ being the orthogonal complement of $V$ in $S$:
 $$V^\bot = \{\vec{x} | \vec{x}^T \vec{v} = 0 | \vec{v} \in V\}$$
@@ -107,7 +107,7 @@ $$ D = C^{-1}AC $$
 This is also the definition that matrices $A$ and $D$ are similar.
 
 ## orthonormal basis
-$$B = \{\vec{v_1}, \vec{v_2}, ... \vec{v_n}\} $$ for subspace $$V$$ of $$R^n$$ is _orthonormal_ iff:
+$B = \{\vec{v_1}, \vec{v_2}, ... \vec{v_n}\} $ for subspace $V$ of $R^n$ is _orthonormal_ iff:
 $$||\vec{v_i}|| = 1$$
 $$\vec{v_i} \cdot \vec{v_j} = 0, i \neq j $$
 

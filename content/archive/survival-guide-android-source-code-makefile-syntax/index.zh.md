@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Android 源代码上手指南 - Makefile语法'
-date: 2014-03-22 23:05
+date: 2014-03-22
 comments: true
 categories: 
 ---

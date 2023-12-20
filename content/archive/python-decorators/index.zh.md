@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "关于python decorators"
-date: 2013-08-11 21:15
+date: 2013-08-11
 comments: true
 categories: python
 ---

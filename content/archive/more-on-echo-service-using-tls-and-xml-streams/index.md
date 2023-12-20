@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'More on Echo Service: Using TLS and XML Streams'
-date: 2012-05-29 15:27
+date: 2012-05-29
 comments: true
 categories: [erlang, ejabberd]
 ---

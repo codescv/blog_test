@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'The Architecture of Ejabberd'
-date: 2012-06-06 17:39
+date: 2012-06-06
 comments: true
 categories: [erlang, ejabberd]
 ---

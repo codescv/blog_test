@@ -1,7 +1,7 @@
 ---
 layout: post
 title: '优雅的repo sync自动重试'
-date: 2014-03-07 22:15
+date: 2014-03-07
 comments: true
 categories: [android]
 ---

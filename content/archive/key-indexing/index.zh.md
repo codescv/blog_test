@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "使用Key Indexing来避免初始化"
-date: 2013-08-04 16:59
+date: 2013-08-04
 comments: true
 categories: algorithms
 ---
