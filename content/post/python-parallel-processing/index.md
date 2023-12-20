@@ -1,15 +1,13 @@
 ---
 title: Python parallel processing
-date: '2023-12-20'
+date: '2020-08-30'
+tags:
+  - Python
+  - Programming
 ---
 
-> A blogpost about parallel processing in Python.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/python-parallel-processing.ipynb)
 
-- toc: true 
-- badges: true
-- comments: true
-- categories: [Python, Programming]
-- hide: false
 
 I came across this function called `parallel` in [fastai](https://github.com/fastai/fastai), and it seems very interesting.
 

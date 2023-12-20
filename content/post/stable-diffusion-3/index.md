@@ -1,15 +1,13 @@
 ---
 title: Stable Diffusion from Begginer to Master (3) VAE Deep Dive
-date: '2023-12-20'
+date: 2022-12-16
+tags:
+  - DeepLearning
+  - Python
 ---
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/stable-diffusion-3.ipynb)
 
-- date: "2022-12-16"
-- toc: true 
-- badges: true
-- comments: true
-- categories: [Deep Learning, Python]
-- hide: false
 
 Starting from this 3rd tutorial of Stable Diffusion, we'll dive into the details of pipelines and see how each component work.
 

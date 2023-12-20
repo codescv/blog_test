@@ -1,14 +1,12 @@
 ---
 title: Stable Diffusion from Begginer to Master (4) Text Encoder and Tokenizer
-date: '2023-12-20'
+date: '2022-12-16'
+tags:
+  - DeepLearning
+  - Python
 ---
 
-- date: "2022-12-16"
-- toc: true 
-- badges: true
-- comments: true
-- categories: [Deep Learning, Python]
-- hide: false
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/stable-diffusion-4.ipynb)
 
 In this tutorial we'll take a deeper look into the text processing components of stable diffusion - the `TextEncoder` and the `Tokenizer`.
 

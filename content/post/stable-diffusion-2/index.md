@@ -1,15 +1,12 @@
 ---
 title: Stable Diffusion from Begginer to Master (2) Dreambooth
-date: '2023-12-20'
+date: '2022-12-11'
+tags:
+  - DeepLearning
+  - Python
 ---
 
-
-- date: "2022-12-11"
-- toc: true 
-- badges: true
-- comments: true
-- categories: [Deep Learning, Python]
-- hide: false
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/stable-diffusion-2.ipynb)
 
 This is the second one of the Stable Diffusion tutorial series. In this tutorial, we will learn how to fine-tune the stable diffusion model on new images (aka Dreambooth).
 
