@@ -1,6 +1,6 @@
 ---
 title: T5 Paper Notes
-summary: T5 is an encoder-decoder transformer. It utilizes multi-task learning in the training process. By studying the T5 paper, we can learn many interesting details about pre-training of transformer models. This note was written in late 2020, with updated notes from 2023.
+summary: T5 is an encoder-decoder transformer. It utilizes multi-task learning in the training process. By studying the T5 paper, we can learn many interesting details about pre-training of transformer models.
 date: 2020-08-04
 tags:
   - NLP
@@ -50,7 +50,7 @@ T5’s Transformer differs slightly from the original version in the following w
 The paper also notes that they did not experimentally verify the impact of these modifications on performance.
 
 {{% callout note %}}
-Note from 2023: The recent LLaMA model from Meta also uses pre-normalization and relative position embedding. This suggests that core Transformer architectures have remained largely unchanged over the past few years.
+Note from 2023: The recent [LLaMA]({{< relref "../llama" >}}) model from Meta also uses pre-normalization and relative position embedding. This suggests that core Transformer architectures have remained largely unchanged over the past few years.
 {{% /callout %}}
 
 ## 2.2 The Colossal Clean Crawled Corpus

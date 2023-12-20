@@ -6,7 +6,7 @@ date: "2019-01-18 14:00:00 +0800"
 
 最近终于把deep模型推上线， 距离之前训练出sparse LR模型并上线已经过去了半年的时间。是时候总结一下了。
 
-(之前的分布式LR模型的文章在[这里](/dist-tf-for-sparse-models.html))
+(之前的分布式LR模型的文章在[这里]({{< relref "../dist-tf-for-sparse-models" >}}))
 
 ## deep模型的结构
 deep ctr模型基本单元都差不多: linear, embedding, FM, FC, 基本就是这些东西的组合。例如WDL其实可以看作Linear+DNN, deepFM其实就是WDL里把Linear换成FM, sparse特征embedding后直接接FC, 或者embedding交叉后接FC, dense特征直接concat后FC, 等等。

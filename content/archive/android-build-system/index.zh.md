@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Android 源代码上手指南 - Build System初探'
-date: 2014-03-21 20:37
+date: 2014-03-21
 comments: true
 categories: [android]
 ---

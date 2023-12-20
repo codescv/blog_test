@@ -4,7 +4,7 @@ title: Haskell Notes (2)
 categories: [Haskell]
 tags: [Haskell, FP]
 published: True
-
+date: 2016-10-29
 ---
 
 # Monads

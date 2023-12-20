@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Bash在cd进入目录时自动启动脚本'
-date: 2014-03-08 16:35
+date: 2014-03-08
 comments: true
 categories: 
 ---
