@@ -1,16 +1,11 @@
 ---
 title: Stable Diffusion from Begginer to Master (1) Pipelines and Prompts
-date: '2023-12-20'
+date: '2022-12-07'
+summary: Introduction to Stable Diffusion.
+tags: 
+  - DeepLearning
+  - Python
 ---
-
-> Introduction to Stable Diffusion.
-
-- date: "2022-12-07"
-- toc: true 
-- badges: true
-- comments: true
-- categories: [Deep Learning, Python]
-- hide: false
 
 # Introduction
 
