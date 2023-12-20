@@ -4,7 +4,7 @@ summary: 通过对官方LLaMA代码分析, 学习现代Transformer的工作原�
 date: 2023-10-23
 tags:
   - NLP
-  - Deep Learning
+  - DeepLearning
   - Transformer
 image:
   caption: 'Image credit: [**IndustryWired**](https://industrywired.com)'

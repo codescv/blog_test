@@ -4,8 +4,7 @@ summary: Learn how modern transformers work by analyzing the official implementa
 date: 2023-12-14
 tags:
   - NLP
-  - Deep
-  - Learning
+  - DeepLearning
   - Transformer
 image:
   caption: "Image credit: [**IndustryWired**](https://industrywired.com)"
