@@ -1,6 +1,12 @@
 ---
 title: GPT from Scratch in Jax
 date: '2024-02-05'
+summary: Introduction to Stable Diffusion.
+tags: 
+  - DeepLearning
+  - Python
+  - GPT
+  - Jax
 ---
 
 
