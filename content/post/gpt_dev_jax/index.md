@@ -1,12 +1,18 @@
 ---
 title: GPT from Scratch in Jax
 date: '2024-02-05'
-summary: Introduction to Stable Diffusion.
+summary: Implements GPT from scratch using Jax, reproduct the NanoGPT model from the video "Let's build GPT: from scratch, in code, spelled out."
+by Andrej Karpathy
 tags: 
   - DeepLearning
   - Python
   - GPT
   - Jax
+links:
+  - icon_pack: custom
+    icon: colab
+    name: Colab
+    url: 'https://colab.research.google.com/github/codescv/codescv.github.io/blob/main/notebooks/gpt_dev_jax.ipynb'
 ---
 
 
