@@ -1,7 +1,7 @@
 ---
 title: GPT from Scratch in Jax
 date: '2024-02-05'
-summary: Implements GPT from scratch using Jax, reproduct the NanoGPT model from the video Let\'s build GPT: from scratch, in code, spelled out. by Andrej Karpathy
+summary: Implements GPT from scratch using Jax, reproduce the NanoGPT model from the video Lets build GPT from scratch, in code, spelled out. by Andrej Karpathy
 tags: 
   - DeepLearning
   - Python
